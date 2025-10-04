@@ -8,6 +8,7 @@ A Python-based framework for modeling, planning, and controlling a six-legged he
 
 ```bash
 ├── hexapod/              # Core simulation modules
+│   ├── HexaPodSim.py     # Main program entry point
 │   ├── kinematics.py     # Inverse kinematics for rectangular body
 │   ├── dynamics.py       # Physics and torque modeling
 │   ├── gait.py           # Gait generators (tripod, ripple, wave)
@@ -66,17 +67,34 @@ git clone https://github.com/ChrisDelta3Robotics/HexaPodSim2.0.git
 cd HexaPodSim2.0
 ```
 
+### 🚀 Quick Start
+
+Run the hexapod simulation:
+```bash
+python hexapod/HexaPodSim.py
+```
+
+Or with specific options:
+```bash
+python hexapod/HexaPodSim.py --gait tripod    # Start with tripod gait
+python hexapod/HexaPodSim.py --no-gui         # Run without GUI
+python hexapod/HexaPodSim.py --demo walk      # Run walking demo
+```
+
 ---
 
 ## 🧠 Features
 
+- **Main Program**: Single entry point (`HexaPodSim.py`) with command-line options
+- **Multiple Gaits**: Tripod, wave, and ripple gait patterns
+- **Interactive Control**: Real-time keyboard controls and GUI interface
+- **Demo Modes**: Built-in demonstrations (walk, turn, maneuver)
+- **Flexible Configuration**: Command-line arguments for different setups
 - Inverse kinematics for rectangular body geometry
-- Gait generation: tripod, ripple, wave
 - Hierarchical control (sense-plan-act)
 - Terrain-aware path planning (A*, PRM)
 - Stability analysis (support polygon, center of mass)
 - Simulated maneuvers: slalom, lane-change, centroid rotation
-- Real-time GUI for control & visualization
 
 ---
 
@@ -130,9 +148,16 @@ Switch between tripod, ripple, and wave gaits (button in GUI).
 
 ## 🧪 Testing
 
-Basic testing can be done by running the simulation directly:
+Run the main simulation:
 ```bash
-python -m hexapod
+python hexapod/HexaPodSim.py
+```
+
+Test with different configurations:
+```bash
+python hexapod/HexaPodSim.py --demo walk      # Test walking demo
+python hexapod/HexaPodSim.py --gait wave      # Test wave gait
+python hexapod/HexaPodSim.py --debug          # Enable debug output
 ```
 
 For development testing, you can add test functions directly in the modules.
