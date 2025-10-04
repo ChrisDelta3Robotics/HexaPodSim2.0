@@ -2,6 +2,13 @@
 
 This document outlines the complete implementation roadmap for the HexaPodSim 2.0 project, broken down into small, modular work packages with specific prompts for optimal results.
 
+> **🎯 Important**: This project follows specific coding standards defined in `.github/copilot-instructions.md`. Key requirements:
+> - **Joint angles in DEGREES** (not radians) throughout the project
+> - All rotational joints limited to **-90° to +90°** range
+> - Joint position convention: -90° (rightmost), 0° (center), +90° (leftmost)
+> - **PID controllers** for all rotational joints
+> - Follow PEP 8 standards with comprehensive docstrings and type hints
+
 ---
 
 ## 📋 Table of Contents
@@ -25,28 +32,33 @@ This document outlines the complete implementation roadmap for the HexaPodSim 2.
 
 **Prompt for AI Assistant:**
 ```
+IMPORTANT: Follow .github/copilot-instructions.md coding standards. Use DEGREES for all angles, not radians.
+
 Implement forward kinematics for a hexapod robot with rectangular body layout. Each leg has 3 DOF:
-- Joint 1 (Coxa): Yaw rotation (-90° to +90°)
+- Joint 1 (Coxa): Yaw rotation (-90° to +90°, where -90°=rightmost, 0°=center, +90°=leftmost)
 - Joint 2 (Femur): Pitch rotation (-90° to +90°) 
-- Joint 3 (Tibia): Pitch rotation (-60° to +135°)
+- Joint 3 (Tibia): Pitch rotation (-90° to +90°, extended range for this joint)
 
 Requirements:
-- Use Denavit-Hartenberg (DH) convention
+- Use Denavit-Hartenberg (DH) convention with DEGREE calculations
 - Leg dimensions: coxa=0.04m, femur=0.08m, tibia=0.12m
-- Return 3D position (x,y,z) for given joint angles
+- All angle inputs/outputs in DEGREES
+- Return 3D position (x,y,z) for given joint angles in degrees
 - Include workspace visualization function
-- Add boundary checking for joint limits
-- Use numpy for matrix operations
+- Strict boundary checking for -90° to +90° joint limits
+- Use numpy for matrix operations (convert to radians only internally)
+- Follow PEP 8: descriptive names, type hints, docstrings, error handling
+- Break complex functions into smaller, manageable pieces
 
-Include comprehensive docstrings and type hints.
+Include comprehensive docstrings and unit tests for validation.
 ```
 
 **Deliverables:**
-- [ ] `ForwardKinematics` class
-- [ ] DH parameter tables for all 6 legs
-- [ ] Joint angle validation
-- [ ] Workspace calculation functions
-- [ ] Unit tests for known positions
+- [ ] `ForwardKinematics` class with degree-based interface
+- [ ] DH parameter tables for all 6 legs (calculations in degrees)
+- [ ] Joint angle validation for -90° to +90° range
+- [ ] Workspace calculation functions (degree inputs)
+- [ ] Unit tests for known positions with degree validation
 
 ### 1.2 Inverse Kinematics Implementation
 **File:** `hexapod/kinematics.py`
@@ -55,37 +67,78 @@ Include comprehensive docstrings and type hints.
 
 **Prompt for AI Assistant:**
 ```
+IMPORTANT: Follow .github/copilot-instructions.md coding standards. Use DEGREES for all angles.
+
 Implement inverse kinematics for the hexapod robot to calculate joint angles for desired foot positions.
 
 Requirements:
 - Analytical solution using geometric approach
+- All angle calculations and returns in DEGREES
 - Handle multiple solutions (elbow up/down configurations)
-- Return valid joint angles or None if unreachable
+- Return valid joint angles in degrees or None if unreachable
+- Strict enforcement of -90° to +90° joint limits
 - Include singularity detection and handling
 - Add functions for:
-  * Single leg IK solution
+  * Single leg IK solution (degrees input/output)
   * All legs IK solution
-  * Reachability checking
+  * Reachability checking with degree constraints
 - Use the same leg dimensions from forward kinematics
 - Comprehensive error handling for unreachable positions
+- Follow PEP 8: clear variable names, type hints, docstrings
+- Break complex calculations into smaller functions
 
-Include validation against forward kinematics results.
+Include validation against forward kinematics results (degree consistency).
 ```
 
 **Deliverables:**
-- [ ] `InverseKinematics` class
-- [ ] Analytical IK solver
-- [ ] Multiple solution handling
-- [ ] Reachability validation
-- [ ] Cross-validation with FK
+- [ ] `InverseKinematics` class with degree-based interface
+- [ ] Analytical IK solver (degree calculations)
+- [ ] Multiple solution handling within joint limits
+- [ ] Reachability validation for -90° to +90° range
+- [ ] Cross-validation with FK (degree consistency)
 
-### 1.3 Robot Body Configuration
+### 1.3 PID Joint Controllers
+**File:** `hexapod/controller.py`
+**Duration:** 2-3 hours
+**Priority:** HIGH
+
+**Prompt for AI Assistant:**
+```
+IMPORTANT: Follow .github/copilot-instructions.md coding standards. All joints require PID controllers.
+
+Implement PID controllers for all 18 rotational joints (6 legs × 3 joints each).
+
+Requirements:
+- Individual PID controller for each joint
+- Target angles and current angles in DEGREES
+- Joint limits strictly enforced: -90° to +90°
+- Configurable PID gains (Kp, Ki, Kd) per joint
+- Anti-windup protection for integral term
+- Smooth trajectory following with minimal overshoot
+- Real-time control loop with configurable update rate
+- Position feedback and error tracking
+- Safety limits and emergency stop capability
+- Follow PEP 8: clear naming, type hints, comprehensive docstrings
+- Modular design with separate PID class
+
+Include tuning utilities and performance monitoring.
+```
+
+**Deliverables:**
+- [ ] `PIDController` class for individual joints
+- [ ] `JointControllerManager` for all 18 joints
+- [ ] PID tuning utilities and auto-tuning functions
+- [ ] Safety monitoring and limit enforcement
+- [ ] Performance metrics and logging
+### 1.4 Robot Body Configuration
 **File:** `hexapod/kinematics.py`
 **Duration:** 1-2 hours
 **Priority:** MEDIUM
 
 **Prompt for AI Assistant:**
 ```
+IMPORTANT: Follow .github/copilot-instructions.md coding standards. Use DEGREES for orientations.
+
 Implement robot body configuration management for rectangular hexapod layout.
 
 Leg positions relative to body center:
@@ -98,16 +151,18 @@ Leg positions relative to body center:
 
 Requirements:
 - Transform between body frame and leg frames
-- Handle body pose (position + orientation)
+- Handle body pose (position + orientation in DEGREES)
 - Support body height adjustment
-- Include body tilt compensation functions
+- Include body tilt compensation functions (degree inputs)
+- Follow PEP 8: descriptive names, type hints, docstrings
+- Comprehensive error handling for invalid configurations
 ```
 
 **Deliverables:**
-- [ ] `RobotConfiguration` class
+- [ ] `RobotConfiguration` class with degree-based orientations
 - [ ] Body-to-leg coordinate transforms
-- [ ] Body pose management
-- [ ] Configuration validation
+- [ ] Body pose management (degree-based rotations)
+- [ ] Configuration validation and error handling
 
 ---
 
@@ -209,7 +264,9 @@ Include configurable ground properties (stiffness, damping, friction).
 
 **Prompt for AI Assistant:**
 ```
-Implement the three fundamental hexapod gaits with phase coordination.
+IMPORTANT: Follow .github/copilot-instructions.md coding standards. Use DEGREES and integrate with PID controllers.
+
+Implement the three fundamental hexapod gaits with phase coordination and PID integration.
 
 Gait specifications:
 1. Tripod Gait: 50% duty factor, legs (1,4,5) then (2,3,6)
@@ -219,11 +276,16 @@ Gait specifications:
 Requirements:
 - Phase calculation for each leg
 - Smooth transitions between swing/stance
+- Generate target joint angles in DEGREES for PID controllers
 - Configurable cycle times and step parameters
-- Gait switching capabilities
+- Gait switching capabilities with smooth transitions
 - Real-time gait state tracking
+- Integration with PID joint controllers
+- Respect -90° to +90° joint limits during all movements
+- Follow PEP 8: clear naming, type hints, comprehensive docstrings
+- Break complex gait logic into smaller, manageable functions
 
-Include gait visualization and debugging functions.
+Include gait visualization and debugging functions with degree displays.
 ```
 
 **Deliverables:**
@@ -414,18 +476,25 @@ Include configurable control parameters and tuning interfaces.
 
 **Prompt for AI Assistant:**
 ```
+IMPORTANT: Follow .github/copilot-instructions.md coding standards. Display all angles in DEGREES.
+
 Implement 3D visualization of hexapod robot using matplotlib.
 
 Requirements:
 - Real-time 3D robot rendering with proper leg configurations
+- Display joint angles in DEGREES in all UI elements
 - Body and leg coordinate frames display
 - Foot trajectory visualization
 - Support polygon and COM indicators
 - Multiple viewing angles and zoom controls
 - Animation capabilities for gait visualization
 - Color coding for different leg states (swing/stance)
+- Joint angle displays showing current vs target (in degrees)
+- PID controller status indicators for each joint
+- Follow PEP 8: clear class names, type hints, comprehensive docstrings
+- Break visualization into smaller, manageable rendering functions
 
-Include performance optimization for smooth real-time display.
+Include performance optimization for smooth real-time display at 30+ FPS.
 ```
 
 **Deliverables:**
@@ -729,44 +798,71 @@ Include interactive tutorials and example scenarios.
 ## 🎯 Success Criteria
 
 ### Minimum Viable Product (MVP)
-- [ ] Forward/inverse kinematics working
-- [ ] Basic tripod gait implementation
-- [ ] Simple 3D visualization
-- [ ] Keyboard control interface
-- [ ] Flat terrain walking
+- [ ] Forward/inverse kinematics working with degree-based interface
+- [ ] PID controllers operational for all 18 joints
+- [ ] Basic tripod gait implementation with degree calculations
+- [ ] Simple 3D visualization showing joint angles in degrees
+- [ ] Keyboard control interface with degree-based feedback
+- [ ] Flat terrain walking with proper joint limit enforcement
 
 ### Full Feature Set
-- [ ] All three gaits implemented
+- [ ] All three gaits implemented with PID integration
 - [ ] Terrain navigation capabilities
-- [ ] Complete GUI with real-time control
+- [ ] Complete GUI with real-time degree displays
 - [ ] Path planning and obstacle avoidance
 - [ ] Stability monitoring and recovery
 - [ ] Configuration and logging systems
+- [ ] Joint limit safety systems (-90° to +90° enforcement)
 
 ### Performance Targets
 - [ ] Real-time simulation at 30+ FPS
+- [ ] PID control loop stability with minimal overshoot
+- [ ] Joint positioning accuracy within ±1 degree
 - [ ] Stable walking on 15° slopes
 - [ ] Obstacle navigation in cluttered environments
 - [ ] Gait transitions within 2 seconds
 - [ ] Path planning response < 100ms
+- [ ] All joint movements respect -90° to +90° limits
 
 ---
 
 ## 🔧 Development Tools & Best Practices
 
+### GitHub Copilot Integration
+**CRITICAL**: This project has specific coding standards in `.github/copilot-instructions.md`:
+
+**Key Requirements:**
+- **ALL ANGLES IN DEGREES** - Never use radians in public interfaces
+- **Joint Range**: Strictly -90° to +90° for all rotational joints
+- **Joint Convention**: -90°=rightmost, 0°=center, +90°=leftmost
+- **PID Controllers**: Required for all 18 rotational joints
+- **PEP 8 Compliance**: Descriptive names, type hints, docstrings
+- **Modular Design**: Break complex functions into smaller pieces
+- **Error Handling**: Comprehensive exception management
+
+**Before Each Work Package:**
+1. Review `.github/copilot-instructions.md`
+2. Ensure all angle calculations use degrees
+3. Implement proper PID controller integration
+4. Follow naming conventions and documentation standards
+5. Test joint limits and boundary conditions
+
 ### Recommended Development Setup
-- **IDE**: VS Code with Python extensions
+- **IDE**: VS Code with Python extensions and GitHub Copilot
 - **Version Control**: Git with feature branches
-- **Testing**: pytest for unit testing
+- **Testing**: pytest for unit testing with degree validation
 - **Profiling**: cProfile for performance analysis
 - **Documentation**: Sphinx with autodoc
 
 ### Code Quality Standards
-- **PEP 8**: Python style guide compliance
-- **Type Hints**: All functions and classes
-- **Docstrings**: NumPy/Google style
-- **Testing**: >80% code coverage
-- **Comments**: Explain complex algorithms and math
+- **PEP 8**: Python style guide compliance (as per copilot instructions)
+- **Type Hints**: All functions and classes with clear parameter types
+- **Docstrings**: NumPy/Google style for all classes and methods
+- **Degree Convention**: All public APIs use degrees, internal radians acceptable
+- **Testing**: >80% code coverage with joint limit validation
+- **Comments**: Explain complex algorithms and mathematical formulations
+- **Joint Safety**: Always validate -90° to +90° range in all functions
+- **PID Integration**: All motion commands go through PID controllers
 
 ### Development Workflow
 1. Create feature branch for each work package
