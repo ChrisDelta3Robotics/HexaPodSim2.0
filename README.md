@@ -13,11 +13,9 @@ A Python-based framework for modeling, planning, and controlling a six-legged he
 │   ├── gait.py           # Gait generators (tripod, ripple, wave)
 │   ├── planner.py        # Path planning (A*, PRM)
 │   ├── terrain.py        # Terrain generation/analysis
-│   └── controller.py     # Control logic
-├── gui/                  # GUI interface and input handling
-├── examples/             # Example scripts and test cases
-├── assets/               # Diagrams, terrain maps, visuals
-├── tests/                # Unit tests
+│   ├── controller.py     # Control logic
+│   ├── gui.py            # GUI interface and visualization
+│   └── input_handler.py  # Input handling for controls
 ├── README.md             # Project documentation
 ```
 
@@ -82,9 +80,9 @@ cd HexaPodSim2.0
 
 ---
 
-## 🎮 Control Interface (GUI)
+## 🎮 Control Interface
 
-Custom GUI for real-time control and visualization.
+Integrated GUI for real-time control and visualization (located in `hexapod/gui.py`).
 
 **Movement Keys:**
 - **w** (hold): Walk forward
@@ -132,15 +130,12 @@ Switch between tripod, ripple, and wave gaits (button in GUI).
 
 ## 🧪 Testing
 
-Run unit tests:
+Basic testing can be done by running the simulation directly:
 ```bash
-pytest tests/
+python -m hexapod
 ```
 
-Try a full simulation:
-```bash
-python examples/run_tripod_sim.py
-```
+For development testing, you can add test functions directly in the modules.
 
 ---
 
