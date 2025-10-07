@@ -177,10 +177,10 @@ The HexaPodSim 2.0 GUI features a modern, user-friendly interface with a black b
 │                                       │
 │  ┌─── Movement ───┐  ┌─── Actions ──┐ │
 │  │                │  │              │ │
-│  │      [W] ▲     │  │ [GAIT ▼]     │ │
-│  │   [A]◄─┼─►[D]  │  │ [DEMO ▼]     │ │ 
-│  │      [S] ▼     │  │ [PATH ▼]     │ │
-│  │    [Q] ⤺ [E] ⤻ │  │              │ │
+│  │   [Q] ⤺  [E] ⤻ │  │ [GAIT ▼]     │ │
+│  │      [W] ▲     │  │ [DEMO ▼]     │ │
+│  │   [A]◄─┼─►[D]  │  │ [PATH ▼]     │ │
+│  │      [S] ▼     │  │              │ │
 │  │                │  │ [START/STOP] │ │
 │  │  WASD + QE     │  │              │ │
 │  └────────────────┘  └──────────────┘ │
