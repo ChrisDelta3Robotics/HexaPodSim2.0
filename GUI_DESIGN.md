@@ -180,17 +180,18 @@ The HexaPodSim 2.0 GUI features a modern, user-friendly interface with a black b
 │  │      [W] ▲     │  │ [GAIT ▼]     │ │
 │  │   [A]◄─┼─►[D]  │  │ [DEMO ▼]     │ │ 
 │  │      [S] ▼     │  │ [PATH ▼]     │ │
-│  │                │  │              │ │
-│  │  Walking WASD  │  │ [START/STOP] │ │
+│  │    [Q] ⤺ [E] ⤻ │  │              │ │
+│  │                │  │ [START/STOP] │ │
+│  │  WASD + QE     │  │              │ │
 │  └────────────────┘  └──────────────┘ │
 │                                       │
-│  ┌─── Turning ────┐  ┌─── System ───┐ │
+│  ┌─── System ─────┐  ┌─── Quick ────┐ │
 │  │                │  │              │ │
-│  │   [Q] ⤺       │  │ [RESET]      │ │
-│  │                │  │ [SAVE]       │ │
-│  │   [E] ⤻       │  │ [LOAD]       │ │
-│  │                │  │ [SETTINGS]   │ │
-│  │ Turn Left/Right│  │              │ │
+│  │ [RESET]        │  │ [CROUCH]     │ │
+│  │ [SAVE]         │  │ [STAND]      │ │
+│  │ [LOAD]         │  │ [CENTER]     │ │
+│  │ [SETTINGS]     │  │ [LEAN]       │ │
+│  │                │  │              │ │
 │  └────────────────┘  └──────────────┘ │
 │                                       │
 │  ┌─────── Dropdowns ────────────────┐ │
