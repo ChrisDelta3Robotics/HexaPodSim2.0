@@ -14,7 +14,22 @@ applyTo: "**/*.py"
 - Group related functions into modules and packages.
 - Include error handling to manage exceptions gracefully.
 - Avoid complexity; break down large functions into smaller, manageable pieces.
-- For all rotational joints, use degrees instead of radians. 
-- All rotational joints are limited to a range of -90 to +90 degrees.
+## Robot Configuration Standards
+
+### Leg Positioning
+- **Star-shaped configuration**: Front and back legs angled for improved stability
+- `INWARD_LEG_ANGLE = 15` degrees (configurable variable)
+- Front legs (L1, R1): Base angle = 90° + 15° = 105° from body centerline
+- Middle legs (L2, R2): Base angle = 90° (perpendicular to body)
+- Back legs (L3, R3): Base angle = 90° - 15° = 75° from body centerline
+- Apply as body-frame rotation before Denavit-Hartenberg calculations
+
+### Joint Angle Conventions
+- **ALL angles in degrees** (never radians)
+- Joint limits: -90° to +90° for all rotational joints
+- Use consistent naming: `coxa_angle`, `femur_angle`, `tibia_angle`
+- Positive rotations follow right-hand rule around joint axis
 - Rotational joints start at -90 degrees at the rightmost position, 0 degrees at the center position, and +90 degrees at the leftmost position.
 - rotational joints have a PID controller to reach the target angle.
+- make the gui responsive and user-friendly.
+- use black and neon colors for the gui.

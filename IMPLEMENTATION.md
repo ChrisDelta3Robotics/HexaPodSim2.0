@@ -34,17 +34,25 @@ This document outlines the complete implementation roadmap for the HexaPodSim 2.
 ```
 IMPORTANT: Follow .github/copilot-instructions.md coding standards. Use DEGREES for all angles, not radians.
 
-Implement forward kinematics for a hexapod robot with rectangular body layout. Each leg has 3 DOF:
+Implement forward kinematics for a hexapod robot with STAR-SHAPED leg configuration. Each leg has 3 DOF:
 - Joint 1 (Coxa): Yaw rotation (-90° to +90°, where -90°=rightmost, 0°=center, +90°=leftmost)
 - Joint 2 (Femur): Pitch rotation (-90° to +90°) 
 - Joint 3 (Tibia): Pitch rotation (-90° to +90°, extended range for this joint)
 
+★ STAR CONFIGURATION REQUIREMENTS:
+- INWARD_LEG_ANGLE = 15° (configurable parameter)
+- Front legs (L1, R1): Base rotation +15° from perpendicular
+- Middle legs (L2, R2): Base rotation 0° (perpendicular)
+- Back legs (L3, R3): Base rotation -15° from perpendicular
+- Apply base rotation BEFORE standard D-H kinematics
+
 Requirements:
 - Use Denavit-Hartenberg (DH) convention with DEGREE calculations
 - Leg dimensions: coxa=0.04m, femur=0.08m, tibia=0.12m
+- Body-frame base rotations applied before D-H transforms
 - All angle inputs/outputs in DEGREES
 - Return 3D position (x,y,z) for given joint angles in degrees
-- Include workspace visualization function
+- Include workspace visualization function showing star pattern
 - Strict boundary checking for -90° to +90° joint limits
 - Use numpy for matrix operations (convert to radians only internally)
 - Follow PEP 8: descriptive names, type hints, docstrings, error handling
@@ -139,15 +147,22 @@ Include tuning utilities and performance monitoring.
 ```
 IMPORTANT: Follow .github/copilot-instructions.md coding standards. Use DEGREES for orientations.
 
-Implement robot body configuration management for rectangular hexapod layout.
+Implement robot body configuration management for STAR-SHAPED hexapod layout.
 
-Leg positions relative to body center:
-- L1 (left front): (0.10, 0.075, 0)
-- R1 (right front): (0.10, -0.075, 0)
-- L2 (left middle): (0.0, 0.075, 0)
-- R2 (right middle): (0.0, -0.075, 0)
-- L3 (left rear): (-0.10, 0.075, 0)
-- R3 (right rear): (-0.10, -0.075, 0)
+★ STAR CONFIGURATION - Leg positions and base rotations:
+- INWARD_LEG_ANGLE = 15° (configurable parameter)
+
+Front legs (angled forward):
+- L1 (left front): position (0.10, 0.075, 0), base rotation +15°
+- R1 (right front): position (0.10, -0.075, 0), base rotation +15°
+
+Middle legs (perpendicular):
+- L2 (left middle): position (0.0, 0.075, 0), base rotation 0°
+- R2 (right middle): position (0.0, -0.075, 0), base rotation 0°
+
+Back legs (angled backward):
+- L3 (left rear): position (-0.10, 0.075, 0), base rotation -15°
+- R3 (right rear): position (-0.10, -0.075, 0), base rotation -15°
 
 Requirements:
 - Transform between body frame and leg frames
@@ -478,19 +493,22 @@ Include configurable control parameters and tuning interfaces.
 ```
 IMPORTANT: Follow .github/copilot-instructions.md coding standards. Display all angles in DEGREES.
 
-Implement 3D visualization of hexapod robot using matplotlib.
+Implement 3D visualization of hexapod robot using matplotlib with STAR configuration rendering.
 
 Requirements:
-- Real-time 3D robot rendering with proper leg configurations
+- Real-time 3D robot rendering with STAR-SHAPED leg configuration
+- Display INWARD_LEG_ANGLE = 15° parameter in UI
+- Show front/back leg angles (+15°/-15°) vs middle legs (0°)
 - Display joint angles in DEGREES in all UI elements
-- Body and leg coordinate frames display
-- Foot trajectory visualization
+- Body and leg coordinate frames display (including base rotations)
+- Foot trajectory visualization showing star pattern footprint
 - Support polygon and COM indicators
 - Multiple viewing angles and zoom controls
-- Animation capabilities for gait visualization
+- Animation capabilities for gait visualization with star layout
 - Color coding for different leg states (swing/stance)
 - Joint angle displays showing current vs target (in degrees)
 - PID controller status indicators for each joint
+- Star configuration parameter controls (adjustable INWARD_LEG_ANGLE)
 - Follow PEP 8: clear class names, type hints, comprehensive docstrings
 - Break visualization into smaller, manageable rendering functions
 

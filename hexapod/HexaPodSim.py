@@ -28,9 +28,10 @@ def parse_arguments():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-    python hexapod/HexaPodSim.py                    # Start with default settings
+    python hexapod/HexaPodSim.py                    # Start with default star config (15°)
     python hexapod/HexaPodSim.py --gait tripod      # Start with tripod gait
     python hexapod/HexaPodSim.py --no-gui           # Run without GUI
+    python hexapod/HexaPodSim.py --leg-angle 20    # Use 20° star configuration
     python hexapod/HexaPodSim.py --config custom.yaml  # Use custom config
         """
     )
@@ -56,6 +57,13 @@ Examples:
     )
     
     parser.add_argument(
+        "--leg-angle",
+        type=float,
+        default=15.0,
+        help="Inward leg angle for star configuration in degrees (default: 15.0)"
+    )
+    
+    parser.add_argument(
         "--debug",
         action="store_true",
         help="Enable debug output"
@@ -69,12 +77,14 @@ Examples:
     
     return parser.parse_args()
 
-def initialize_robot(config_name="default"):
+def initialize_robot(config_name="default", inward_leg_angle=15.0):
     """Initialize the hexapod robot with given configuration."""
     print(f"🤖 Initializing hexapod robot with '{config_name}' configuration...")
+    print(f"⭐ Star configuration: INWARD_LEG_ANGLE = {inward_leg_angle}°")
     
     # TODO: Import and initialize actual robot modules
     # from . import kinematics, dynamics, gait, controller
+    # robot = kinematics.HexapodKinematics(inward_leg_angle=inward_leg_angle)
     
     print("✅ Robot initialization complete")
     return True
@@ -95,6 +105,7 @@ def run_simulation(args):
     print(f"   Gait: {args.gait}")
     print(f"   GUI: {'Enabled' if not args.no_gui else 'Disabled'}")
     print(f"   Config: {args.config}")
+    print(f"   ⭐ Star Leg Angle: {args.leg_angle}°")
     
     if args.debug:
         print("🐛 Debug mode enabled")
@@ -161,7 +172,7 @@ def main():
     
     try:
         # Initialize robot systems
-        if not initialize_robot(args.config):
+        if not initialize_robot(args.config, args.leg_angle):
             print("❌ Failed to initialize robot")
             return 1
         
