@@ -1,0 +1,22 @@
+2025-10-07 23:43:47,194 - __main__ - INFO - ✓ tkinter available
+2025-10-07 23:43:47,429 - __main__ - INFO - ✓ matplotlib available
+2025-10-07 23:43:47,429 - __main__ - INFO - ✓ numpy available
+2025-10-07 23:43:47,841 - gui - INFO - Robot systems initialized successfully
+2025-10-07 23:43:47,884 - gui - INFO - Gait visualization panel initialized
+2025-10-07 23:43:47,927 - gui - INFO - Joint angle panel initialized
+2025-10-07 23:43:47,957 - gui - INFO - 3D robot visualization initialized
+2025-10-07 23:43:47,997 - gui - INFO - Control panel initialized
+2025-10-07 23:43:48,150 - gui - INFO - HexaPodSim 2.0 GUI initialized successfully
+2025-10-07 23:44:08,020 - gui - INFO - GUI application cleaned up
+2025-10-07 23:44:08,020 - __main__ - INFO - Application exited normally
+2025-10-07 23:48:27,956 - __main__ - INFO - ✓ tkinter available
+2025-10-07 23:48:28,136 - __main__ - INFO - ✓ matplotlib available
+2025-10-07 23:48:28,136 - __main__ - INFO - ✓ numpy available
+2025-10-07 23:48:28,532 - gui - INFO - Robot systems initialized successfully
+2025-10-07 23:48:28,562 - gui - INFO - Gait visualization panel initialized
+2025-10-07 23:48:28,594 - gui - INFO - Joint angle panel initialized
+2025-10-07 23:48:28,616 - gui - INFO - 3D robot visualization initialized
+2025-10-07 23:48:28,649 - gui - INFO - Control panel initialized
+2025-10-07 23:48:28,785 - gui - INFO - HexaPodSim 2.0 GUI initialized successfully
+2025-10-07 23:48:36,101 - gui - INFO - GUI application cleaned up
+2025-10-07 23:48:36,101 - __main__ - INFO - Application exited normally
