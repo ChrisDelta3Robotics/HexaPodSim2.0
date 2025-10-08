@@ -23,7 +23,7 @@ def test_gui_components():
     try:
         # Test basic imports
         print("Testing imports...")
-        from gui import Colors, RobotState, GaitVisualizationPanel, Robot3DVisualization
+        from hexapod.gui import Colors, RobotState, GaitVisualizationPanel, Robot3DVisualization
         print("✓ Core GUI imports successful")
         
         # Test tkinter availability
@@ -56,7 +56,7 @@ def run_gui_demo():
     print("\n🚀 Starting GUI demonstration...")
     
     try:
-        from gui import HexaPodSimGUI
+        from hexapod.gui import HexaPodSimGUI
         
         print("Creating main application...")
         app = HexaPodSimGUI()

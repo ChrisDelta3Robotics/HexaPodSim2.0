@@ -79,7 +79,7 @@ def main():
     
     # Check if GUI components are available
     try:
-        from gui import HexaPodSimGUI, Colors, RobotState
+        from hexapod.gui import HexaPodSimGUI, Colors, RobotState
         print("\n✅ All GUI components loaded successfully!")
     except Exception as e:
         print(f"\n❌ Error loading GUI components: {e}")

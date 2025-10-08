@@ -19,8 +19,9 @@ def test_basic_sensors():
     """Test the basic sensor functionality"""
     print("🔬 Testing Basic Sensor Components...")
     
+    # Test comprehensive sensor suite
     try:
-        from sensors import (
+        from hexapod.sensors import (
             IMUSensor, JointEncoder, ForceSensor, 
             DistanceSensor, TerrainSensor, SensorSuite
         )
@@ -84,7 +85,7 @@ def test_sensor_fusion_basic():
     print("\n🧠 Testing Basic Sensor Fusion...")
     
     try:
-        from sensor_fusion import ExtendedKalmanFilter, SensorFusionManager
+        from hexapod.sensor_fusion import ExtendedKalmanFilter, SensorFusionManager
         
         print("  ✓ Creating EKF...")
         ekf = ExtendedKalmanFilter(state_dim=13, measurement_dim=6)
@@ -106,7 +107,7 @@ def test_sensor_fusion_basic():
         # Create a simple mock sensor
         class MockSensor:
             def read(self):
-                from sensors import SensorReading
+                from hexapod.sensors import SensorReading
                 return SensorReading(
                     sensor_id="mock",
                     timestamp=time.time(),
@@ -136,8 +137,8 @@ def run_mini_demo():
     print("\n🚀 Running Mini Integration Demo...")
     
     try:
-        from sensors import SensorSuite, IMUSensor, JointEncoder
-        from sensor_fusion import SensorFusionManager
+        from hexapod.sensors import SensorSuite, IMUSensor, JointEncoder
+        from hexapod.sensor_fusion import SensorFusionManager
         
         print("  🔧 Setting up mini system...")
         

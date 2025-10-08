@@ -901,8 +901,10 @@ class HexapodKinematics:
             ValueError: If target position is invalid or leg_id unknown
         """
         # Validate inputs
-        if leg_id not in self.LEG_NAMES:
+        if isinstance(leg_id, str) and leg_id not in self.LEG_NAMES:
             raise ValueError(f"Unknown leg_id: {leg_id}. Must be one of {self.LEG_NAMES}")
+        elif not isinstance(leg_id, str):
+            raise ValueError(f"leg_id must be a string, got {type(leg_id)}")
         
         if len(target_position) != 3:
             raise ValueError("Target position must be a 3D vector [x, y, z]")

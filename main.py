@@ -70,7 +70,8 @@ def main():
     
     try:
         # Import GUI after dependency check
-        from gui import HexaPodSimGUI
+        # Import GUI system
+        from hexapod.gui import HexaPodSimGUI
         
         print("\n✓ All dependencies satisfied")
         print("🚀 Starting HexaPodSim 2.0 GUI...")

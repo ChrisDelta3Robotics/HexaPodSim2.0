@@ -417,7 +417,7 @@ class MotionController:
         self.status.gait_phase = self.gait_generator.cycle_time / self.gait_generator.parameters.cycle_time
         
         # Extract support pattern from gait info
-        if 'leg_phases' in gait_info:
+        if isinstance(gait_info, dict) and 'leg_phases' in gait_info:
             self.status.support_pattern = [
                 phase == 'stance' for phase in gait_info['leg_phases']
             ]
@@ -462,7 +462,7 @@ class MotionController:
                 default_position = np.array([0.15, 0.13 * (1 if i < 3 else -1), -0.2])
                 
                 # Convert to joint angles using inverse kinematics
-                joint_angles = self.kinematics.inverse_kinematics(leg_name, default_position)
+                joint_angles, success = self.kinematics.inverse_kinematics(default_position, leg_name)
                 joint_angles_deg = np.degrees(joint_angles)
                 target_angles.extend(joint_angles_deg)
             except Exception as e:

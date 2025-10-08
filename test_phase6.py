@@ -24,7 +24,7 @@ def test_sensor_suite():
     print("🔬 Testing Advanced Sensor Suite...")
     
     try:
-        from sensors import (
+        from hexapod.sensors import (
             IMUSensor, JointEncoder, ForceSensor, 
             DistanceSensor, TerrainSensor, SensorSuite
         )
@@ -81,8 +81,8 @@ def test_sensor_fusion():
     print("\n🧠 Testing Sensor Fusion System...")
     
     try:
-        from sensor_fusion import ExtendedKalmanFilter, SensorFusionManager
-        from sensors import IMUSensor, JointEncoder
+        from hexapod.sensor_fusion import ExtendedKalmanFilter, SensorFusionManager
+        from hexapod.sensors import IMUSensor, JointEncoder
         
         print("  ✓ Creating Extended Kalman Filter...")
         ekf = ExtendedKalmanFilter(state_dim=13, measurement_dim=6)
@@ -132,7 +132,7 @@ def test_feedback_control():
     print("\n🎛️ Testing Feedback Control System...")
     
     try:
-        from feedback_control import (
+        from hexapod.feedback_control import (
             PIDController, AdaptiveController, 
             FeedbackControlManager, ControlMode
         )
@@ -194,7 +194,7 @@ def test_environmental_sensing():
     print("\n🌍 Testing Environmental Sensing...")
     
     try:
-        from environmental_sensing import (
+        from hexapod.environmental_sensing import (
             TerrainAnalyzer, ObstacleDetector, 
             EnvironmentalMapper, SafetyMonitor
         )
@@ -279,10 +279,10 @@ def run_integrated_demo():
     print("\n🚀 Running Integrated Phase 6 Demo...")
     
     try:
-        from sensors import SensorSuite, IMUSensor, JointEncoder, ForceSensor
-        from sensor_fusion import SensorFusionManager
-        from feedback_control import FeedbackControlManager, PIDController
-        from environmental_sensing import EnvironmentalMapper, SafetyMonitor
+        from hexapod.sensors import SensorSuite, IMUSensor, JointEncoder, ForceSensor
+        from hexapod.sensor_fusion import SensorFusionManager
+        from hexapod.feedback_control import FeedbackControlManager, PIDController
+        from hexapod.environmental_sensing import EnvironmentalMapper, SafetyMonitor
         
         print("  🔧 Initializing integrated systems...")
         
