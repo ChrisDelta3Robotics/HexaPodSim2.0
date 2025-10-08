@@ -510,8 +510,8 @@ Include configurable control parameters and tuning interfaces.
 
 ## Phase 5: GUI & Visualization
 
-### 5.1 3D Robot Visualization
-**File:** `hexapod/gui.py`
+### 5.1 Dual-Mode GUI Architecture
+**Files:** `hexapod/gui.py`, `hexapod/gui_multi.py`, `main.py`
 **Duration:** 4-5 hours
 **Priority:** HIGH
 
@@ -519,13 +519,26 @@ Include configurable control parameters and tuning interfaces.
 ```
 IMPORTANT: Follow .github/copilot-instructions.md coding standards. Display all angles in DEGREES.
 
-Implement 3D visualization of hexapod robot using matplotlib with STAR configuration rendering.
+Implement dual-mode GUI system with adaptive layouts for different screen sizes:
 
-Requirements:
+🖥️ SINGLE-WINDOW MODE (1400x900+):
+- Integrated interface with all components in one window
+- Optimized for large displays and desktop setups
+- Full feature access with spacious layout
+
+🪟 MULTI-WINDOW MODE (720x720 displays):
+- 4 separate optimized windows:
+  * Control Window (350x650) - Movement controls and system status
+  * 3D Visualization Window (700x700) - Real-time robot display
+  * Gait Window (700x350) - Gait pattern visualization  
+  * Data Window (350x350) - Joint angles and metrics
+
+SHARED REQUIREMENTS:
 - Real-time 3D robot rendering with STAR-SHAPED leg configuration
 - Display INWARD_LEG_ANGLE = 15° parameter in UI
 - Show front/back leg angles (+15°/-15°) vs middle legs (0°)
 - Display joint angles in DEGREES in all UI elements
+- Black background with vibrant neon colors (#00FF00, #00FFFF, etc.)
 - Body and leg coordinate frames display (including base rotations)
 - Foot trajectory visualization showing star pattern footprint
 - Support polygon and COM indicators
@@ -535,18 +548,54 @@ Requirements:
 - Joint angle displays showing current vs target (in degrees)
 - PID controller status indicators for each joint
 - Star configuration parameter controls (adjustable INWARD_LEG_ANGLE)
+- Command-line argument support: --multi-window flag
 - Follow PEP 8: clear class names, type hints, comprehensive docstrings
-- Break visualization into smaller, manageable rendering functions
 
-Include performance optimization for smooth real-time display at 30+ FPS.
+ARCHITECTURE REQUIREMENTS:
+- Shared robot state across all windows (multi-window mode)
+- Independent window management with synchronized updates
+- Window positioning optimized for target screen sizes
+- Performance optimization for smooth real-time display at 30+ FPS
+- Inter-window communication for control commands
 ```
 
 **Deliverables:**
-- [ ] `Robot3DVisualizer` class
-- [ ] Real-time 3D rendering
+- [ ] `HexaPodSimGUI` class (single-window mode)
+- [ ] `HexaPodSimMultiGUI` class (multi-window mode)  
+- [ ] Command-line argument parsing in `main.py`
+- [ ] Real-time 3D rendering for both modes
+- [ ] Window management system
+- [ ] Performance optimization for dual modes
+
+### 5.2 3D Robot Visualization Components
+**Files:** `hexapod/gui.py`, `hexapod/gui_multi.py`
+**Duration:** 2-3 hours
+**Priority:** HIGH
+
+**Prompt for AI Assistant:**
+```
+Implement shared 3D visualization components used by both GUI modes.
+
+Requirements:
+- `Robot3DVisualization` class for matplotlib-based rendering
+- Real-time robot pose updates with star configuration
+- Interactive camera controls (rotate, pan, zoom)
+- Joint angle displays in degrees
+- Leg state color coding (swing/stance)
+- Star pattern footprint visualization
+- Animation framework for smooth movement
+- Grid overlay and coordinate axes
+- Performance optimized for 30+ FPS updates
+
+Ensure components work seamlessly in both single-window and multi-window modes.
+```
+
+**Deliverables:**
+- [ ] `Robot3DVisualization` class
+- [ ] Camera control system
 - [ ] Animation framework
-- [ ] Interactive viewing controls
 - [ ] Performance optimization
+- [ ] Shared visualization utilities
 
 ### 5.2 Terrain and Environment Display
 **File:** `hexapod/gui.py`
@@ -575,29 +624,64 @@ Support multiple terrain types and procedural generation.
 - [ ] Path display system
 - [ ] Environment management
 
-### 5.3 Control Panel and HMI
-**File:** `hexapod/gui.py`
-**Duration:** 3-4 hours
+### 5.3 Control Panel Components
+**Files:** `hexapod/gui.py`, `hexapod/gui_multi.py`  
+**Duration:** 2-3 hours
 **Priority:** HIGH
 
 **Prompt for AI Assistant:**
 ```
-Implement interactive control panel for robot operation.
+Implement control panel components that work in both GUI modes.
 
 Requirements:
-- Real-time parameter adjustment sliders
+- `ControlPanel` class for robot movement controls
+- WASD + QE keyboard layout support
+- Real-time parameter adjustment sliders (in degrees)
 - Gait selection buttons and indicators
-- Manual control inputs (keyboard/joystick)
 - Status displays (battery, stability, errors)
 - Performance metrics visualization
 - Configuration save/load functionality
 - Emergency stop and safety controls
+- Neon-themed button styling with hover effects
+- Responsive design for different window sizes
 
-Include responsive design that works with different screen sizes.
+Ensure components adapt to single-window and multi-window layouts.
 ```
 
 **Deliverables:**
 - [ ] `ControlPanel` class
+- [ ] Keyboard input handling
+- [ ] Parameter controls
+- [ ] Status monitoring
+- [ ] Safety systems
+
+### 5.4 Data Visualization Panels
+**Files:** `hexapod/gui.py`, `hexapod/gui_multi.py`
+**Duration:** 2 hours  
+**Priority:** MEDIUM
+
+**Prompt for AI Assistant:**
+```
+Implement data visualization panels for both GUI modes.
+
+Requirements:
+- `JointAnglePanel` for real-time joint angle displays (degrees)
+- `GaitVisualizationPanel` for gait pattern timing charts
+- `SystemMetricsPanel` for performance monitoring
+- Color-coded displays with neon theme
+- Real-time updating charts and gauges
+- Export functionality for data analysis
+- Responsive layouts for different window sizes
+
+Components should work seamlessly in both single and multi-window modes.
+```
+
+**Deliverables:**
+- [ ] Joint angle visualization
+- [ ] Gait pattern displays  
+- [ ] System metrics panels
+- [ ] Data export functionality
+- [ ] Responsive layouts
 - [ ] Interactive controls
 - [ ] Status monitoring
 - [ ] Configuration management

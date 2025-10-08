@@ -15,6 +15,8 @@ Date: 2024
 
 import tkinter as tk
 from tkinter import ttk
+import matplotlib
+matplotlib.use('TkAgg')  # Force matplotlib to use TkAgg backend
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
@@ -343,67 +345,182 @@ class Robot3DVisualization:
         # Create frame
         self.frame = tk.Frame(parent, bg=Colors.PANEL_BG, relief=tk.RAISED, bd=2)
         
-        # Create matplotlib figure for 3D plot
-        self.fig = Figure(figsize=(width/100, height/100), facecolor=Colors.BACKGROUND)
-        self.ax = self.fig.add_subplot(111, projection='3d', facecolor=Colors.BACKGROUND)
+        # Create title label
+        title_label = tk.Label(self.frame, text="3D Robot View", 
+                              bg=Colors.PANEL_BG, fg=Colors.TEXT_PRIMARY,
+                              font=("Arial", 12, "bold"))
+        title_label.pack(pady=5)
         
-        # Configure 3D plot
-        self.ax.set_xlim(-0.3, 0.3)
-        self.ax.set_ylim(-0.3, 0.3)
-        self.ax.set_zlim(-0.3, 0.1)
-        self.ax.set_xlabel('X (m)', color=Colors.TEXT_PRIMARY)
-        self.ax.set_ylabel('Y (m)', color=Colors.TEXT_PRIMARY)
-        self.ax.set_zlabel('Z (m)', color=Colors.TEXT_PRIMARY)
-        self.ax.tick_params(colors=Colors.TEXT_PRIMARY)
+        try:
+            # Create matplotlib figure for 3D plot
+            self.fig = Figure(figsize=(6, 7), facecolor=Colors.BACKGROUND)
+            self.ax = self.fig.add_subplot(111, projection='3d', facecolor=Colors.BACKGROUND)
+            
+            # Configure 3D plot
+            self.ax.set_xlim(-0.3, 0.3)
+            self.ax.set_ylim(-0.3, 0.3)
+            self.ax.set_zlim(-0.3, 0.1)
+            self.ax.set_xlabel('X (m)', color=Colors.TEXT_PRIMARY)
+            self.ax.set_ylabel('Y (m)', color=Colors.TEXT_PRIMARY)
+            self.ax.set_zlabel('Z (m)', color=Colors.TEXT_PRIMARY)
+            self.ax.tick_params(colors=Colors.TEXT_PRIMARY)
+            
+            # Create canvas
+            self.canvas = FigureCanvasTkAgg(self.fig, self.frame)
+            canvas_widget = self.canvas.get_tk_widget()
+            canvas_widget.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+            
+            logger.info("3D matplotlib canvas created and embedded")
+            
+            # Robot state
+            self.robot_state = RobotState()
+            self.show_grid = True
+            self.show_shadows = True
+            self.show_coordinates = True
+            self.show_trails = False
+            
+            # Initialize kinematics for visualization
+            try:
+                from .kinematics import HexapodKinematics
+                self.kinematics = HexapodKinematics()
+            except Exception as e:
+                logger.warning(f"Could not load kinematics for 3D visualization: {e}")
+                self.kinematics = None
+            
+            # Draw initial robot
+            self._draw_initial_robot()
+            
+            logger.info("3D robot visualization initialized")
+            
+        except Exception as e:
+            logger.error(f"Failed to create 3D visualization: {e}")
+            # Create fallback display
+            fallback_label = tk.Label(self.frame, 
+                                    text="3D Visualization Loading...\n(Matplotlib 3D)",
+                                    bg=Colors.PANEL_BG, fg=Colors.TEXT_SECONDARY,
+                                    font=("Arial", 10))
+            fallback_label.pack(fill=tk.BOTH, expand=True)
+            self.canvas = None
+            self.ax = None
+    
+    def _draw_initial_robot(self):
+        """Draw initial robot pose"""
+        if self.ax is None:
+            return
+            
+        try:
+            # Clear any existing plots first
+            self.ax.clear()
+            
+            # Configure 3D plot again after clearing
+            self.ax.set_xlim(-0.3, 0.3)
+            self.ax.set_ylim(-0.3, 0.3)
+            self.ax.set_zlim(-0.3, 0.1)
+            self.ax.set_xlabel('X (m)', color=Colors.TEXT_PRIMARY)
+            self.ax.set_ylabel('Y (m)', color=Colors.TEXT_PRIMARY)
+            self.ax.set_zlabel('Z (m)', color=Colors.TEXT_PRIMARY)
+            self.ax.tick_params(colors=Colors.TEXT_PRIMARY)
+            self.ax.set_facecolor(Colors.BACKGROUND)
+            
+            # Draw simple robot body (hexagon) - SAME AS WORKING TEST
+            import numpy as np
+            angles = np.linspace(0, 2*np.pi, 7)
+            body_radius = 0.1
+            x_body = body_radius * np.cos(angles)
+            y_body = body_radius * np.sin(angles)
+            z_body = np.zeros_like(x_body)
+            
+            self.ax.plot(x_body, y_body, z_body, color='white', linewidth=3, label='Robot Body')
+            
+            # Draw robot legs (6 legs in star formation) - SAME AS WORKING TEST
+            leg_angles = np.array([0, 60, 120, 180, 240, 300])
+            leg_colors = ['red', 'green', 'blue', 'yellow', 'orange', 'purple']
+            
+            for i, (angle, color) in enumerate(zip(leg_angles, leg_colors)):
+                angle_rad = np.radians(angle)
+                
+                # Leg base on body
+                base_x = 0.08 * np.cos(angle_rad)
+                base_y = 0.08 * np.sin(angle_rad)
+                base_z = 0
+                
+                # Leg extends outward and down
+                foot_x = 0.2 * np.cos(angle_rad)
+                foot_y = 0.2 * np.sin(angle_rad)
+                foot_z = -0.15
+                
+                # Draw leg
+                self.ax.plot([base_x, foot_x], [base_y, foot_y], [base_z, foot_z], 
+                           color=color, linewidth=3, alpha=0.8)
+                
+                # Draw foot
+                self.ax.scatter([foot_x], [foot_y], [foot_z], color=color, s=50)
+            
+            # Draw grid
+            if self.show_grid:
+                self._draw_grid()
+            
+            # Draw coordinate frame
+            if self.show_coordinates:
+                self._draw_coordinate_frame()
+            
+            # Set title
+            self.ax.set_title('Hexapod Robot 3D View', color='white')
+            
+            logger.info("3D robot drawn successfully")
+            
+        except Exception as e:
+            logger.error(f"Error drawing initial robot: {e}")
+            import traceback
+            traceback.print_exc()
         
-        # Create canvas
-        self.canvas = FigureCanvasTkAgg(self.fig, self.frame)
-        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-        
-        # Robot state
-        self.robot_state = RobotState()
-        self.show_grid = True
-        self.show_shadows = True
-        self.show_coordinates = True
-        self.show_trails = False
-        
-        # Initialize kinematics for visualization
-        self.kinematics = HexapodKinematics()
-        
-        logger.info("3D robot visualization initialized")
+        # Force canvas update
+        if self.canvas:
+            try:
+                self.canvas.draw()
+                logger.info("3D canvas updated successfully")
+            except Exception as e:
+                logger.error(f"Error updating 3D canvas: {e}")
     
     def update_robot_display(self, robot_state: RobotState):
         """Update 3D robot display"""
+        if self.ax is None or self.canvas is None:
+            return
+            
         self.robot_state = robot_state
         
-        # Clear previous plot
-        self.ax.clear()
-        
-        # Configure 3D plot
-        self.ax.set_xlim(-0.3, 0.3)
-        self.ax.set_ylim(-0.3, 0.3)
-        self.ax.set_zlim(-0.3, 0.1)
-        self.ax.set_xlabel('X (m)', color=Colors.TEXT_PRIMARY)
-        self.ax.set_ylabel('Y (m)', color=Colors.TEXT_PRIMARY)
-        self.ax.set_zlabel('Z (m)', color=Colors.TEXT_PRIMARY)
-        self.ax.tick_params(colors=Colors.TEXT_PRIMARY)
-        self.ax.set_facecolor(Colors.BACKGROUND)
-        
-        # Draw robot body (hexagon)
-        self._draw_robot_body()
-        
-        # Draw legs
-        self._draw_robot_legs()
-        
-        # Draw grid if enabled
-        if self.show_grid:
-            self._draw_grid()
-        
-        # Draw coordinate frame if enabled
-        if self.show_coordinates:
-            self._draw_coordinate_frame()
-        
-        self.canvas.draw()
+        try:
+            # Clear previous plot
+            self.ax.clear()
+            
+            # Configure 3D plot
+            self.ax.set_xlim(-0.3, 0.3)
+            self.ax.set_ylim(-0.3, 0.3)
+            self.ax.set_zlim(-0.3, 0.1)
+            self.ax.set_xlabel('X (m)', color=Colors.TEXT_PRIMARY)
+            self.ax.set_ylabel('Y (m)', color=Colors.TEXT_PRIMARY)
+            self.ax.set_zlabel('Z (m)', color=Colors.TEXT_PRIMARY)
+            self.ax.tick_params(colors=Colors.TEXT_PRIMARY)
+            self.ax.set_facecolor(Colors.BACKGROUND)
+            
+            # Draw robot body (hexagon)
+            self._draw_robot_body()
+            
+            # Draw legs
+            self._draw_robot_legs()
+            
+            # Draw grid if enabled
+            if self.show_grid:
+                self._draw_grid()
+            
+            # Draw coordinate frame if enabled
+            if self.show_coordinates:
+                self._draw_coordinate_frame()
+            
+            self.canvas.draw()
+            
+        except Exception as e:
+            logger.error(f"Error updating 3D robot display: {e}")
     
     def _draw_robot_body(self):
         """Draw hexagonal robot body"""
@@ -431,14 +548,21 @@ class Robot3DVisualization:
     
     def _draw_single_leg(self, leg_name: str):
         """Draw a single leg"""
+        if self.ax is None:
+            return
+            
         # Get leg color
-        leg_color = LEG_CONFIG.LEG_COLORS[leg_name]
+        leg_color = LEG_CONFIG.LEG_COLORS.get(leg_name, Colors.TEXT_PRIMARY)
         
-        # Get joint angles
-        coxa_angle, femur_angle, tibia_angle = self.robot_state.joint_angles[leg_name]
+        # Get joint angles (with fallbacks)
+        if leg_name in self.robot_state.joint_angles:
+            coxa_angle, femur_angle, tibia_angle = self.robot_state.joint_angles[leg_name]
+        else:
+            # Default angles
+            coxa_angle, femur_angle, tibia_angle = (0.0, -20.0, 40.0)
         
         # Calculate leg base position with star configuration
-        base_angle, base_radius = LEG_CONFIG.LEG_POSITIONS[leg_name]
+        base_angle, base_radius = LEG_CONFIG.LEG_POSITIONS.get(leg_name, (0.0, 0.08))
         
         # Apply star configuration offset
         if leg_name in ['L1', 'R3']:  # Front and back get inward angle
@@ -465,88 +589,213 @@ class Robot3DVisualization:
         femur_length = 0.08
         tibia_length = 0.12
         
-        # Calculate joint positions using forward kinematics
-        try:
-            foot_pos = self.kinematics.forward_kinematics(leg_name, coxa_angle, femur_angle, tibia_angle)
-            
-            # Calculate intermediate joint positions (simplified)
-            coxa_end_x = base_x + coxa_length * np.cos(np.radians(base_angle + coxa_angle))
-            coxa_end_y = base_y + coxa_length * np.sin(np.radians(base_angle + coxa_angle))
-            coxa_end_z = base_z
-            
-            # Femur end (knee)
-            femur_angle_world = femur_angle  # Simplified
-            knee_x = coxa_end_x + femur_length * np.cos(np.radians(base_angle + coxa_angle)) * np.cos(np.radians(femur_angle_world))
-            knee_y = coxa_end_y + femur_length * np.sin(np.radians(base_angle + coxa_angle)) * np.cos(np.radians(femur_angle_world))
-            knee_z = coxa_end_z + femur_length * np.sin(np.radians(femur_angle_world))
-            
-            # Foot position from kinematics
-            foot_x, foot_y, foot_z = foot_pos
-            
-        except Exception as e:
-            # Fallback to simple visualization
-            foot_x = base_x + 0.15 * np.cos(base_angle_rad)
-            foot_y = base_y + 0.15 * np.sin(base_angle_rad)
-            foot_z = -0.15
-            
-            coxa_end_x = base_x + 0.04 * np.cos(base_angle_rad)
-            coxa_end_y = base_y + 0.04 * np.sin(base_angle_rad)
-            coxa_end_z = base_z
-            
-            knee_x = base_x + 0.08 * np.cos(base_angle_rad)
-            knee_y = base_y + 0.08 * np.sin(base_angle_rad)
-            knee_z = base_z - 0.05
+        # Calculate joint positions using forward kinematics if available
+        if self.kinematics:
+            try:
+                foot_pos = self.kinematics.forward_kinematics(leg_name, 
+                                                            np.radians(coxa_angle), 
+                                                            np.radians(femur_angle), 
+                                                            np.radians(tibia_angle))
+                
+                # Calculate intermediate joint positions (simplified)
+                coxa_end_x = base_x + coxa_length * np.cos(np.radians(base_angle + coxa_angle))
+                coxa_end_y = base_y + coxa_length * np.sin(np.radians(base_angle + coxa_angle))
+                coxa_end_z = base_z
+                
+                # Femur end (knee) - simplified calculation
+                femur_angle_world = femur_angle  
+                knee_x = coxa_end_x + femur_length * np.cos(np.radians(base_angle + coxa_angle)) * np.cos(np.radians(femur_angle_world))
+                knee_y = coxa_end_y + femur_length * np.sin(np.radians(base_angle + coxa_angle)) * np.cos(np.radians(femur_angle_world))
+                knee_z = coxa_end_z + femur_length * np.sin(np.radians(femur_angle_world))
+                
+                # Foot position from kinematics
+                foot_x, foot_y, foot_z = foot_pos
+                
+            except Exception as e:
+                # Fallback to simple visualization
+                logger.debug(f"Kinematics calculation failed for {leg_name}: {e}")
+                foot_x, foot_y, foot_z, coxa_end_x, coxa_end_y, coxa_end_z, knee_x, knee_y, knee_z = self._calculate_simple_leg_positions(base_x, base_y, base_z, base_angle_rad, coxa_angle, femur_angle, tibia_angle)
+        else:
+            # Simple leg visualization without kinematics
+            foot_x, foot_y, foot_z, coxa_end_x, coxa_end_y, coxa_end_z, knee_x, knee_y, knee_z = self._calculate_simple_leg_positions(base_x, base_y, base_z, base_angle_rad, coxa_angle, femur_angle, tibia_angle)
         
         # Draw leg segments
-        # Coxa (hip)
-        self.ax.plot([base_x, coxa_end_x], [base_y, coxa_end_y], [base_z, coxa_end_z], 
-                    color=leg_color, linewidth=3, alpha=0.8)
+        try:
+            # Coxa (hip)
+            self.ax.plot([base_x, coxa_end_x], [base_y, coxa_end_y], [base_z, coxa_end_z], 
+                        color=leg_color, linewidth=3, alpha=0.8)
+            
+            # Femur (thigh)
+            self.ax.plot([coxa_end_x, knee_x], [coxa_end_y, knee_y], [coxa_end_z, knee_z], 
+                        color=leg_color, linewidth=3, alpha=0.8)
+            
+            # Tibia (shin)
+            self.ax.plot([knee_x, foot_x], [knee_y, foot_y], [knee_z, foot_z], 
+                        color=leg_color, linewidth=3, alpha=0.8)
+            
+            # Draw joints
+            self.ax.scatter([base_x, coxa_end_x, knee_x, foot_x], 
+                           [base_y, coxa_end_y, knee_y, foot_y],
+                           [base_z, coxa_end_z, knee_z, foot_z], 
+                           color=leg_color, s=20)
+            
+            # Draw foot contact point
+            if foot_z <= -0.18:  # If foot is on ground
+                self.ax.scatter([foot_x], [foot_y], [-0.2], color=leg_color, s=50, marker='o')
+                
+        except Exception as e:
+            logger.error(f"Error drawing leg {leg_name}: {e}")
+    
+    def _calculate_simple_leg_positions(self, base_x, base_y, base_z, base_angle_rad, coxa_angle, femur_angle, tibia_angle):
+        """Calculate simple leg positions without full kinematics"""
+        # Simple fallback calculations
+        coxa_length = 0.04
+        femur_length = 0.08
+        tibia_length = 0.12
         
-        # Femur (thigh)
-        self.ax.plot([coxa_end_x, knee_x], [coxa_end_y, knee_y], [coxa_end_z, knee_z], 
-                    color=leg_color, linewidth=3, alpha=0.8)
+        # Coxa end
+        coxa_end_x = base_x + coxa_length * np.cos(base_angle_rad + np.radians(coxa_angle))
+        coxa_end_y = base_y + coxa_length * np.sin(base_angle_rad + np.radians(coxa_angle))
+        coxa_end_z = base_z
         
-        # Tibia (shin)
-        self.ax.plot([knee_x, foot_x], [knee_y, foot_y], [knee_z, foot_z], 
-                    color=leg_color, linewidth=3, alpha=0.8)
+        # Knee position (simplified)
+        knee_x = coxa_end_x + femur_length * np.cos(base_angle_rad + np.radians(coxa_angle))
+        knee_y = coxa_end_y + femur_length * np.sin(base_angle_rad + np.radians(coxa_angle))
+        knee_z = base_z + femur_length * np.sin(np.radians(femur_angle))
         
-        # Draw joints
-        self.ax.scatter([base_x, coxa_end_x, knee_x, foot_x], 
-                       [base_y, coxa_end_y, knee_y, foot_y],
-                       [base_z, coxa_end_z, knee_z, foot_z], 
-                       color=leg_color, s=20)
+        # Foot position (simplified)
+        foot_x = knee_x + tibia_length * np.cos(base_angle_rad + np.radians(coxa_angle))
+        foot_y = knee_y + tibia_length * np.sin(base_angle_rad + np.radians(coxa_angle))
+        foot_z = knee_z + tibia_length * np.sin(np.radians(tibia_angle))
         
-        # Draw foot contact point
-        if foot_z <= -0.18:  # If foot is on ground
-            self.ax.scatter([foot_x], [foot_y], [-0.2], color=leg_color, s=50, marker='o')
+        return foot_x, foot_y, foot_z, coxa_end_x, coxa_end_y, coxa_end_z, knee_x, knee_y, knee_z
+        
+        # Draw leg segments
+        try:
+            # Coxa (hip)
+            self.ax.plot([base_x, coxa_end_x], [base_y, coxa_end_y], [base_z, coxa_end_z], 
+                        color=leg_color, linewidth=3, alpha=0.8)
+            
+            # Femur (thigh)
+            self.ax.plot([coxa_end_x, knee_x], [coxa_end_y, knee_y], [coxa_end_z, knee_z], 
+                        color=leg_color, linewidth=3, alpha=0.8)
+            
+            # Tibia (shin)
+            self.ax.plot([knee_x, foot_x], [knee_y, foot_y], [knee_z, foot_z], 
+                        color=leg_color, linewidth=3, alpha=0.8)
+            
+            # Draw joints
+            self.ax.scatter([base_x, coxa_end_x, knee_x, foot_x], 
+                           [base_y, coxa_end_y, knee_y, foot_y],
+                           [base_z, coxa_end_z, knee_z, foot_z], 
+                           color=leg_color, s=20)
+            
+            # Draw foot contact point
+            if foot_z <= -0.18:  # If foot is on ground
+                self.ax.scatter([foot_x], [foot_y], [-0.2], color=leg_color, s=50, marker='o')
+                
+        except Exception as e:
+            logger.error(f"Error drawing leg {leg_name}: {e}")
+    
+    def _calculate_simple_leg_positions(self, base_x, base_y, base_z, base_angle_rad, coxa_angle, femur_angle, tibia_angle):
+        """Calculate simple leg positions without full kinematics"""
+        # Simple fallback calculations
+        coxa_length = 0.04
+        femur_length = 0.08
+        tibia_length = 0.12
+        
+        # Coxa end
+        coxa_end_x = base_x + coxa_length * np.cos(base_angle_rad + np.radians(coxa_angle))
+        coxa_end_y = base_y + coxa_length * np.sin(base_angle_rad + np.radians(coxa_angle))
+        coxa_end_z = base_z
+        
+        # Knee position (simplified)
+        knee_x = coxa_end_x + femur_length * np.cos(base_angle_rad + np.radians(coxa_angle))
+        knee_y = coxa_end_y + femur_length * np.sin(base_angle_rad + np.radians(coxa_angle))
+        knee_z = base_z + femur_length * np.sin(np.radians(femur_angle))
+        
+        # Foot position (simplified)
+        foot_x = knee_x + tibia_length * np.cos(base_angle_rad + np.radians(coxa_angle))
+        foot_y = knee_y + tibia_length * np.sin(base_angle_rad + np.radians(coxa_angle))
+        foot_z = knee_z + tibia_length * np.sin(np.radians(tibia_angle))
+        
+        return foot_x, foot_y, foot_z, coxa_end_x, coxa_end_y, coxa_end_z, knee_x, knee_y, knee_z
     
     def _draw_grid(self):
         """Draw ground grid"""
-        grid_size = 0.3
-        grid_spacing = 0.05
-        
-        x_grid = np.arange(-grid_size, grid_size + grid_spacing, grid_spacing)
-        y_grid = np.arange(-grid_size, grid_size + grid_spacing, grid_spacing)
-        
-        # Draw grid lines
-        for x in x_grid:
-            self.ax.plot([x, x], [-grid_size, grid_size], [-0.2, -0.2], 
-                        color=Colors.BORDER, alpha=0.3)
-        
-        for y in y_grid:
-            self.ax.plot([-grid_size, grid_size], [y, y], [-0.2, -0.2], 
-                        color=Colors.BORDER, alpha=0.3)
+        if self.ax is None:
+            return
+            
+        try:
+            grid_size = 0.3
+            grid_spacing = 0.05
+            
+            x_grid = np.arange(-grid_size, grid_size + grid_spacing, grid_spacing)
+            y_grid = np.arange(-grid_size, grid_size + grid_spacing, grid_spacing)
+            
+            # Draw grid lines
+            for x in x_grid:
+                self.ax.plot([x, x], [-grid_size, grid_size], [-0.2, -0.2], 
+                            color=Colors.BORDER, alpha=0.3)
+            
+            for y in y_grid:
+                self.ax.plot([-grid_size, grid_size], [y, y], [-0.2, -0.2], 
+                            color=Colors.BORDER, alpha=0.3)
+        except Exception as e:
+            logger.error(f"Error drawing grid: {e}")
     
     def _draw_coordinate_frame(self):
         """Draw coordinate frame at origin"""
-        axis_length = 0.05
-        
-        # X axis (red)
-        self.ax.plot([0, axis_length], [0, 0], [0, 0], color='red', linewidth=2)
-        # Y axis (green)
-        self.ax.plot([0, 0], [0, axis_length], [0, 0], color='green', linewidth=2)
-        # Z axis (blue)
-        self.ax.plot([0, 0], [0, 0], [0, axis_length], color='blue', linewidth=2)
+        if self.ax is None:
+            return
+            
+        try:
+            axis_length = 0.05
+            
+            # X axis (red)
+            self.ax.plot([0, axis_length], [0, 0], [0, 0], color='red', linewidth=2)
+            # Y axis (green)
+            self.ax.plot([0, 0], [0, axis_length], [0, 0], color='green', linewidth=2)
+            # Z axis (blue)
+            self.ax.plot([0, 0], [0, 0], [0, axis_length], color='blue', linewidth=2)
+        except Exception as e:
+            logger.error(f"Error drawing coordinate frame: {e}")
+    
+    def _draw_robot_body(self):
+        """Draw hexagonal robot body"""
+        if self.ax is None:
+            return
+            
+        try:
+            # Body dimensions
+            body_radius = 0.1
+            body_height = 0.02
+            
+            # Create hexagon vertices
+            angles = np.linspace(0, 2*np.pi, 7)  # 7 points to close the hexagon
+            x_body = body_radius * np.cos(angles)
+            y_body = body_radius * np.sin(angles)
+            z_body = np.zeros_like(x_body) + body_height/2
+            
+            # Draw body outline
+            self.ax.plot(x_body, y_body, z_body, color=Colors.TEXT_PRIMARY, linewidth=2)
+            
+            # Draw body top surface (simplified)
+            center_x, center_y, center_z = 0, 0, body_height/2
+            for i in range(6):
+                self.ax.plot([center_x, x_body[i]], [center_y, y_body[i]], [center_z, z_body[i]], 
+                           color=Colors.BUTTON_NORMAL, alpha=0.3)
+                           
+        except Exception as e:
+            logger.error(f"Error drawing robot body: {e}")
+    
+    def _draw_robot_legs(self):
+        """Draw all robot legs with star configuration"""
+        if self.ax is None:
+            return
+            
+        for leg_name in LEG_CONFIG.LEG_NAMES:
+            self._draw_single_leg(leg_name)
     
     def pack(self, **kwargs):
         """Pack the frame"""
@@ -975,14 +1224,26 @@ class HexaPodSimGUI:
     """Main GUI application for HexaPodSim 2.0"""
     
     def __init__(self):
-        # Initialize main window
-        self.root = tk.Tk()
-        self.root.title("🤖 HexaPodSim 2.0 - Hexapod Robot Simulation")
-        self.root.configure(bg=Colors.BACKGROUND)
-        self.root.geometry("1400x900")
-        
-        # Set window icon and properties
-        self.root.resizable(True, True)
+        # Initialize main window with error handling
+        try:
+            self.root = tk.Tk()
+            self.root.title("🤖 HexaPodSim 2.0 - Hexapod Robot Simulation")
+            self.root.configure(bg=Colors.BACKGROUND)
+            self.root.geometry("1400x900")
+            
+            # Set window icon and properties
+            self.root.resizable(True, True)
+            
+            # Force window to front and focus
+            self.root.lift()
+            self.root.attributes('-topmost', True)
+            self.root.after_idle(lambda: self.root.attributes('-topmost', False))
+            
+            logger.info("Main window created successfully")
+            
+        except Exception as e:
+            logger.error(f"Failed to create main window: {e}")
+            raise
         
         # Initialize robot systems
         self.robot_state = RobotState()
@@ -991,57 +1252,132 @@ class HexaPodSimGUI:
         
         # Initialize robot components
         try:
+            logger.info("Initializing robot systems...")
+            from .kinematics import HexapodKinematics
+            from .gait import GaitGenerator, GaitType
+            from .motion import MotionController
+            
+            logger.info("Creating kinematics system...")
             self.kinematics = HexapodKinematics()
-            self.gait_generator = GaitGenerator(self.kinematics)
+            
+            logger.info("Creating gait generator...")
+            self.gait_generator = GaitGenerator(self.kinematics, GaitType.TRIPOD)
+            
+            logger.info("Creating motion controller...")
+            self.motion_controller = MotionController(self.kinematics)
+            
+            # Start motion controller
+            logger.info("Starting motion controller...")
+            self.motion_controller.start()
+            
             logger.info("Robot systems initialized successfully")
         except Exception as e:
             logger.error(f"Failed to initialize robot systems: {e}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
+            # Continue with limited functionality
             self.kinematics = None
             self.gait_generator = None
+            self.motion_controller = None
         
         # Create GUI panels
-        self._create_gui_layout()
+        try:
+            logger.info("Creating GUI layout...")
+            self._create_gui_layout()
+            logger.info("GUI layout created successfully")
+        except Exception as e:
+            logger.error(f"Failed to create GUI layout: {e}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
+            raise
         
         # Set up callbacks
-        self._setup_callbacks()
+        try:
+            logger.info("Setting up callbacks...")
+            self._setup_callbacks()
+            logger.info("Callbacks set up successfully")
+        except Exception as e:
+            logger.error(f"Failed to set up callbacks: {e}")
+            # Continue without callbacks
         
         # Start update loop
-        self._start_update_loop()
+        try:
+            logger.info("Starting update loop...")
+            self._start_update_loop()
+            logger.info("Update loop started successfully")
+        except Exception as e:
+            logger.error(f"Failed to start update loop: {e}")
+            # Continue without updates
         
         logger.info("HexaPodSim 2.0 GUI initialized successfully")
     
     def _create_gui_layout(self):
         """Create the main GUI layout"""
-        # Main container
+        # Main container with better layout management
         main_frame = tk.Frame(self.root, bg=Colors.BACKGROUND)
-        main_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
-        # Top row: Main workspace and 3D view
-        top_frame = tk.Frame(main_frame, bg=Colors.BACKGROUND)
-        top_frame.pack(fill=tk.BOTH, expand=True)
+        # Title section
+        title_label = tk.Label(
+            main_frame,
+            text="🤖 HexaPodSim 2.0 - Hexapod Robot Simulation",
+            font=('Consolas', 16, 'bold'),
+            fg=Colors.ACCENT_1,
+            bg=Colors.BACKGROUND
+        )
+        title_label.pack(pady=(0, 10))
         
-        # Left side: Workspace (60% width)
-        workspace_frame = tk.Frame(top_frame, bg=Colors.BACKGROUND)
-        workspace_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        # Control panel (most important - make it prominent)
+        logger.info("Creating control panel...")
+        self.control_panel = ControlPanel(main_frame, width=1200, height=300)
+        self.control_panel.pack(fill=tk.X, pady=10)
+        
+        # Secondary panels container
+        panels_frame = tk.Frame(main_frame, bg=Colors.BACKGROUND)
+        panels_frame.pack(fill=tk.BOTH, expand=True, pady=10)
+        
+        # Left side: Gait and joint displays
+        left_panel = tk.Frame(panels_frame, bg=Colors.BACKGROUND)
+        left_panel.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 5))
         
         # Gait visualization
-        self.gait_panel = GaitVisualizationPanel(workspace_frame, width=700, height=200)
-        self.gait_panel.pack(fill=tk.X, pady=5)
+        logger.info("Creating gait visualization panel...")
+        try:
+            self.gait_panel = GaitVisualizationPanel(left_panel, width=600, height=200)
+            self.gait_panel.pack(fill=tk.X, pady=(0, 5))
+        except Exception as e:
+            logger.error(f"Failed to create gait panel: {e}")
+            # Create fallback
+            fallback_gait = tk.Label(left_panel, text="Gait Visualization (Loading...)", 
+                                   bg=Colors.PANEL_BG, fg=Colors.TEXT_PRIMARY, height=8)
+            fallback_gait.pack(fill=tk.X, pady=(0, 5))
         
         # Joint angles panel
-        self.joint_panel = JointAnglePanel(workspace_frame, width=700, height=300)
-        self.joint_panel.pack(fill=tk.BOTH, expand=True, pady=5)
+        logger.info("Creating joint angle panel...")
+        try:
+            self.joint_panel = JointAnglePanel(left_panel, width=600, height=250)
+            self.joint_panel.pack(fill=tk.BOTH, expand=True)
+        except Exception as e:
+            logger.error(f"Failed to create joint panel: {e}")
+            # Create fallback
+            fallback_joint = tk.Label(left_panel, text="Joint Angles (Loading...)", 
+                                    bg=Colors.PANEL_BG, fg=Colors.TEXT_PRIMARY, height=10)
+            fallback_joint.pack(fill=tk.BOTH, expand=True)
         
-        # Right side: 3D view (40% width)
-        right_frame = tk.Frame(top_frame, bg=Colors.BACKGROUND)
-        right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, padx=10)
+        # Right side: 3D visualization
+        right_panel = tk.Frame(panels_frame, bg=Colors.BACKGROUND)
+        right_panel.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=(5, 0))
         
-        self.robot_3d = Robot3DVisualization(right_frame, width=500, height=600)
-        self.robot_3d.pack(fill=tk.BOTH, expand=True)
-        
-        # Bottom row: Control panel
-        self.control_panel = ControlPanel(main_frame, width=1400, height=200)
-        self.control_panel.pack(fill=tk.X, side=tk.BOTTOM, pady=5)
+        logger.info("Creating 3D robot visualization...")
+        try:
+            self.robot_3d = Robot3DVisualization(right_panel, width=400, height=500)
+            self.robot_3d.pack(fill=tk.BOTH, expand=True)
+        except Exception as e:
+            logger.error(f"Failed to create 3D visualization: {e}")
+            # Create fallback
+            fallback_3d = tk.Label(right_panel, text="3D Robot View (Loading...)", 
+                                 bg=Colors.PANEL_BG, fg=Colors.TEXT_PRIMARY, width=50, height=25)
+            fallback_3d.pack(fill=tk.BOTH, expand=True)
     
     def _setup_callbacks(self):
         """Set up callback functions for controls"""
@@ -1071,25 +1407,47 @@ class HexaPodSimGUI:
     
     def _handle_movement(self, linear_x: float, linear_y: float, angular_z: float):
         """Handle movement commands"""
-        if self.gait_generator:
+        if self.motion_controller and self.gait_generator:
             try:
-                # Scale velocities
-                max_linear = 0.5  # m/s
-                max_angular = 45.0  # deg/s
+                # Scale velocities to reasonable ranges
+                max_linear = 0.2  # m/s
+                max_angular = 30.0  # deg/s
                 
                 vx = linear_x * max_linear
                 vy = linear_y * max_linear
-                wz = angular_z * max_angular / 57.2958  # Convert to rad/s
+                wz = angular_z * max_angular
                 
-                self.gait_generator.set_velocity(vx, vy, wz)
+                # Set velocity on gait generator
+                self.gait_generator.set_velocity([vx, vy, 0.0], wz * np.pi / 180.0)
+                
+                # Update robot state
                 self.robot_state.velocity = (vx, vy)
-                self.robot_state.angular_velocity = angular_z
+                self.robot_state.angular_velocity = wz
                 
-                if not self.is_running and (abs(vx) > 0.1 or abs(vy) > 0.1 or abs(wz) > 0.1):
+                # Start simulation if movement commanded
+                if not self.is_running and (abs(vx) > 0.01 or abs(vy) > 0.01 or abs(wz) > 0.1):
                     self._start_simulation()
+                
+                # Send movement command to motion controller
+                if abs(vx) > 0.01:
+                    if vx > 0:
+                        success = self.motion_controller.walk_forward(abs(vx))
+                    else:
+                        success = self.motion_controller.walk_backward(abs(vx))
+                elif abs(wz) > 0.1:
+                    if wz > 0:
+                        success = self.motion_controller.turn_left(abs(wz) * np.pi / 180.0)
+                    else:
+                        success = self.motion_controller.turn_right(abs(wz) * np.pi / 180.0)
+                else:
+                    success = self.motion_controller.stop_motion()
+                
+                if success:
+                    self.control_panel.update_status(f"Movement: vx={vx:.2f}, vy={vy:.2f}, wz={wz:.1f}°/s\\n")
                 
             except Exception as e:
                 logger.error(f"Movement error: {e}")
+                self.control_panel.update_status(f"Movement error: {e}\\n")
     
     def _start_simulation(self):
         """Start robot simulation"""
@@ -1113,8 +1471,10 @@ class HexaPodSimGUI:
     
     def _change_gait(self, gait_type: str):
         """Change gait pattern"""
-        if self.gait_generator:
+        if self.gait_generator and self.motion_controller:
             try:
+                from .gait import GaitType
+                
                 # Map gait names to GaitType enum
                 gait_map = {
                     'tripod': GaitType.TRIPOD,
@@ -1123,13 +1483,19 @@ class HexaPodSimGUI:
                 }
                 
                 if gait_type in gait_map:
-                    self.gait_generator.set_gait_type(gait_map[gait_type])
-                    self.robot_state.gait_type = gait_type
-                    self.control_panel.update_status(f"Gait changed to {gait_type}\n")
-                    logger.info(f"Gait changed to {gait_type}")
+                    # Set gait on motion controller
+                    success = self.motion_controller.set_gait_type(gait_map[gait_type])
+                    
+                    if success:
+                        self.robot_state.gait_type = gait_type
+                        self.control_panel.update_status(f"Gait changed to {gait_type}\\n")
+                        logger.info(f"Gait changed to {gait_type}")
+                    else:
+                        self.control_panel.update_status(f"Failed to change gait to {gait_type}\\n")
                 
             except Exception as e:
                 logger.error(f"Gait change error: {e}")
+                self.control_panel.update_status(f"Gait change error: {e}\\n")
     
     def _crouch_robot(self):
         """Make robot crouch"""
@@ -1163,12 +1529,37 @@ class HexaPodSimGUI:
     def _update_displays(self):
         """Update all display panels"""
         try:
+            # Update robot state with real simulation data
+            if self.motion_controller:
+                # Get current robot pose from motion controller
+                if hasattr(self.motion_controller, 'get_current_pose'):
+                    current_pose = self.motion_controller.get_current_pose()
+                    if current_pose:
+                        self.robot_state.position = current_pose.get('position', self.robot_state.position)
+                        self.robot_state.orientation = current_pose.get('orientation', self.robot_state.orientation)
+                
+                # Get current motion state
+                if hasattr(self.motion_controller, 'get_motion_state'):
+                    motion_state = self.motion_controller.get_motion_state()
+                    if motion_state:
+                        self.robot_state.linear_velocity = motion_state.get('linear_velocity', (0, 0, 0))
+                        self.robot_state.angular_velocity = motion_state.get('angular_velocity', (0, 0, 0))
+            
             # Update gait visualization
             if self.is_running and self.gait_generator:
                 # Update gait phase
                 self.robot_state.gait_phase = (self.robot_state.gait_phase + 2.0) % 100.0
                 
-                # Get current leg states (simplified)
+            # Update joint angles from real kinematics
+            self._update_joint_angles()
+            
+            # Update all display panels
+            self._update_joint_displays()
+            self._update_3d_display()
+            self._update_gait_display()
+            
+            # Get current leg states for gait visualization
+            if self.is_running and self.gait_generator:
                 leg_states = self._get_current_leg_states()
                 
                 self.gait_panel.update_gait_pattern(
@@ -1177,22 +1568,57 @@ class HexaPodSimGUI:
                     leg_states
                 )
             
-            # Update joint angles (generate test data for now)
-            if self.is_running:
-                self._update_joint_angles()
-            
-            # Update joint angle display
+        except Exception as e:
+            logger.error(f"Display update error: {e}")
+            self.control_panel.update_status(f"Display update error: {e}\n")
+    
+    def _update_joint_displays(self):
+        """Update joint angle displays"""
+        try:
             self.joint_panel.update_joint_angles(self.robot_state.joint_angles)
             self.joint_panel.update_position(
                 self.robot_state.position,
                 self.robot_state.orientation,
                 self.robot_state.velocity
             )
-            
-            # Update 3D robot display
+        except Exception as e:
+            logger.error(f"Joint display update error: {e}")
+    
+    def _update_3d_display(self):
+        """Update 3D robot display"""
+        try:
             self.robot_3d.update_robot_display(self.robot_state)
-            
-            # Update system status
+        except Exception as e:
+            logger.error(f"3D display update error: {e}")
+    
+    def _update_gait_display(self):
+        """Update gait pattern display"""
+        try:
+            if self.is_running and self.gait_generator:
+                leg_states = self._get_current_leg_states()
+                self.gait_panel.update_gait_pattern(
+                    self.robot_state.gait_type,
+                    self.robot_state.gait_phase,
+                    leg_states
+                )
+        except Exception as e:
+            logger.error(f"Gait display update error: {e}")
+    
+    def _update_system_status(self):
+        """Update system status display"""
+        try:
+            # Update system monitoring
+            if hasattr(self, 'control_panel'):
+                status_text = f"Robot Status: {'Running' if self.is_running else 'Stopped'}\n"
+                status_text += f"Gait: {self.robot_state.gait_type}\n"
+                status_text += f"Phase: {self.robot_state.gait_phase:.1f}%\n"
+                if self.motion_controller:
+                    status_text += "Motion Controller: Active\n"
+                else:
+                    status_text += "Motion Controller: Inactive\n"
+                self.control_panel.update_status(status_text)
+        except Exception as e:
+            logger.error(f"Status update error: {e}")
             if self.is_running:
                 self.robot_state.cpu_load = np.random.uniform(40, 80)
                 self.robot_state.memory_usage = np.random.uniform(30, 60)
@@ -1231,11 +1657,53 @@ class HexaPodSimGUI:
             return {leg: np.random.random() > 0.7 for leg in LEG_CONFIG.LEG_NAMES}
     
     def _update_joint_angles(self):
-        """Update joint angles for animation"""
+        """Update joint angles using real kinematics"""
+        if self.gait_generator and self.kinematics:
+            try:
+                # Update gait generator
+                dt = 0.05  # 20 FPS update rate
+                leg_positions = self.gait_generator.update(dt)
+                
+                # Calculate joint angles for each leg using inverse kinematics
+                for i, leg_name in enumerate(['L1', 'R1', 'L2', 'R2', 'L3', 'R3']):
+                    if i < len(leg_positions):
+                        # Get target position for this leg
+                        target_pos = leg_positions[i]
+                        
+                        try:
+                            # Calculate joint angles using inverse kinematics
+                            joint_angles, success = self.kinematics.inverse_kinematics(target_pos, leg_name)
+                            
+                            if success:
+                                # Convert to degrees and store
+                                joint_angles_deg = np.degrees(joint_angles)
+                                self.robot_state.joint_angles[leg_name] = tuple(joint_angles_deg)
+                            else:
+                                # Keep previous angles if IK fails
+                                if leg_name not in self.robot_state.joint_angles:
+                                    self.robot_state.joint_angles[leg_name] = (0.0, -20.0, 40.0)
+                                    
+                        except Exception as e:
+                            # Fallback to default angles
+                            if leg_name not in self.robot_state.joint_angles:
+                                self.robot_state.joint_angles[leg_name] = (0.0, -20.0, 40.0)
+                
+            except Exception as e:
+                logger.error(f"Joint angle update error: {e}")
+                # Fallback to animated angles
+                self._update_animated_joint_angles()
+        else:
+            # Fallback to animated angles when no real kinematics
+            self._update_animated_joint_angles()
+    
+    def _update_animated_joint_angles(self):
+        """Update joint angles with simple animation (fallback)"""
+        import time
+        
         # Generate test joint angles for animation
         time_factor = time.time() * 2  # Animation speed
         
-        for i, leg in enumerate(LEG_CONFIG.LEG_NAMES):
+        for i, leg in enumerate(['L1', 'R1', 'L2', 'R2', 'L3', 'R3']):
             phase_offset = i * np.pi / 3  # Phase offset for each leg
             
             # Generate sinusoidal joint movements
@@ -1248,11 +1716,34 @@ class HexaPodSimGUI:
     def run(self):
         """Start the GUI application"""
         try:
+            logger.info("Starting GUI mainloop...")
+            
+            # Make sure window is visible and properly sized
+            self.root.deiconify()  # Make sure window is not minimized
+            self.root.lift()       # Bring to front
+            self.root.focus_force() # Force focus
+            
+            # Force geometry update
+            self.root.update_idletasks()
+            self.root.geometry("1400x900")  # Ensure size is set
+            
+            # Update the display before starting mainloop
+            self.root.update()
+            
+            logger.info("GUI window should now be visible with controls")
+            logger.info("Window geometry: 1400x900")
+            logger.info("Starting tkinter mainloop...")
+            
             self.root.mainloop()
+            
+            logger.info("GUI mainloop ended")
+            
         except KeyboardInterrupt:
             logger.info("GUI application interrupted by user")
         except Exception as e:
             logger.error(f"GUI application error: {e}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
         finally:
             self._cleanup()
     

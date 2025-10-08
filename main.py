@@ -6,6 +6,8 @@ This is the main entry point for the HexaPodSim 2.0 hexapod robot simulation.
 Features a modern neon-themed GUI with real-time gait visualization, 3D robot display,
 and comprehensive control systems.
 
+Supports both single-window mode (1400x900) and multi-window mode (4 windows for 720x720 displays).
+
 Author: HexaPodSim Development Team
 Version: 2.0
 License: MIT
@@ -15,6 +17,7 @@ import sys
 import os
 import logging
 import traceback
+import argparse
 from pathlib import Path
 
 # Add the hexapod module to Python path
@@ -60,8 +63,27 @@ def check_dependencies():
 
 def main():
     """Main application entry point"""
+    
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description='HexaPodSim 2.0 - Hexapod Robot Simulation')
+    parser.add_argument('--multi-window', action='store_true', 
+                       help='Use multi-window mode (4 windows for 720x720 displays)')
+    parser.add_argument('--debug', action='store_true',
+                       help='Enable debug logging')
+    
+    args = parser.parse_args()
+    
+    # Configure logging level
+    if args.debug:
+        logging.getLogger().setLevel(logging.DEBUG)
+    
     print("🤖 HexaPodSim 2.0 - Hexapod Robot Simulation")
     print("=" * 50)
+    
+    if args.multi_window:
+        print("🪟 Multi-Window Mode (4 windows for 720x720 displays)")
+    else:
+        print("🖥️  Single-Window Mode (1400x900 display)")
     
     # Check dependencies
     print("Checking dependencies...")
@@ -69,15 +91,19 @@ def main():
         return 1
     
     try:
-        # Import GUI after dependency check
-        # Import GUI system
-        from hexapod.gui import HexaPodSimGUI
-        
         print("\n✓ All dependencies satisfied")
-        print("🚀 Starting HexaPodSim 2.0 GUI...")
         
-        # Create and run the application
-        app = HexaPodSimGUI()
+        if args.multi_window:
+            # Import and start multi-window GUI
+            from hexapod.gui_multi import HexaPodSimMultiGUI
+            print("🚀 Starting HexaPodSim 2.0 Multi-Window GUI...")
+            app = HexaPodSimMultiGUI()
+        else:
+            # Import and start single-window GUI
+            from hexapod.gui import HexaPodSimGUI
+            print("🚀 Starting HexaPodSim 2.0 Single-Window GUI...")
+            app = HexaPodSimGUI()
+        
         app.run()
         
         logger.info("Application exited normally")

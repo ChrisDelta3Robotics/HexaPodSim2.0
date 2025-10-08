@@ -7,7 +7,8 @@ A comprehensive Python framework for modeling, controlling, and visualizing a si
 ## ⭐ Key Features
 
 - **🌟 Star-Shaped Configuration**: Enhanced stability and maneuverability through angled front/back legs
-- **🎮 Modern GUI Interface**: Black background with vibrant neon colors and intuitive controls
+- **🎮 Multi-Display GUI**: Single-window (1400x900) and multi-window (4 windows for 720x720) modes
+- **🪟 Adaptive Interface**: Black background with vibrant neon colors optimized for any screen size
 - **🤖 18 DOF Control**: Individual PID controllers for each joint with degree-based interface
 - **🚶 Advanced Gaits**: Tripod, wave, and ripple locomotion patterns with real-time visualization
 - **🗺️ Path Planning**: A* and PRM algorithms for autonomous navigation
@@ -20,13 +21,15 @@ A comprehensive Python framework for modeling, controlling, and visualizing a si
 
 ```bash
 ├── hexapod/                    # Core simulation modules
-│   ├── HexaPodSim.py          # Main program entry point
+│   ├── main.py                # Main program entry point with GUI mode selection
+│   ├── gui.py                 # Single-window GUI interface (1400x900)
+│   ├── gui_multi.py           # Multi-window GUI for small displays (720x720)
 │   ├── kinematics.py          # Forward/Inverse kinematics (star config)
 │   ├── dynamics.py            # Physics and torque modeling
 │   ├── gait.py                # Gait generators with timing control
 │   ├── planner.py             # Path planning algorithms
 │   ├── controller.py          # PID control system
-│   ├── gui.py                 # Modern neon-themed GUI interface
+│   ├── motion.py              # Motion control and coordination
 │   └── utils.py               # Utility functions and constants
 ├── .github/
 │   └── copilot-instructions.md # AI coding standards and conventions
@@ -100,32 +103,77 @@ cd HexaPodSim2.0
 
 ### 🚀 Quick Start
 
-**Basic simulation with GUI:**
+**🖥️ Single-Window Mode (for large displays 1400x900+):**
 ```bash
-python hexapod/HexaPodSim.py
+python main.py
+# OR explicitly specify single-window mode
+python main.py --single-window
+```
+
+**🪟 Multi-Window Mode (for small displays 720x720):**
+```bash
+python main.py --multi-window
+```
+
+**📖 Get help and see all options:**
+```bash
+python main.py --help
 ```
 
 **Advanced options:**
 ```bash
-# Start with specific gait pattern
-python hexapod/HexaPodSim.py --gait tripod
+# Enable debug logging
+python main.py --debug
 
-# Run without GUI (console mode)
-python hexapod/HexaPodSim.py --no-gui
-
-# Custom star configuration angle
-python hexapod/HexaPodSim.py --leg-angle 20.0
-
-# Run built-in demo sequences
-python hexapod/HexaPodSim.py --demo walk
-
-# Enable debug output
-python hexapod/HexaPodSim.py --debug
+# Combine multi-window with debug
+python main.py --multi-window --debug
 ```
 
 ---
 
-## 🎮 GUI Interface
+## 🎮 GUI Interface Options
+
+HexaPodSim 2.0 offers **two display modes** to accommodate different screen sizes:
+
+### 🖥️ Single-Window Mode (1400x900)
+Perfect for large displays and traditional desktop setups:
+- **Integrated Interface**: All controls and visualizations in one window
+- **Optimal Layout**: Designed for screens 1400x900 pixels or larger
+- **Full Feature Access**: Complete control panel, 3D visualization, and data displays
+
+### 🪟 Multi-Window Mode (720x720 optimized)
+Designed specifically for small displays and compact setups:
+
+**4 Optimized Windows:**
+```
+┌─────────────────┬──────────────────────────────┐
+│   Control       │       3D Robot               │
+│   Window        │       Visualization          │
+│   (350x650)     │       (700x700)              │
+│                 │                              │
+│   • Movement    │   • 3D Hexapod Model        │
+│   • Status      │   • Real-time Updates       │
+│   • Commands    │   • Camera Controls         │
+│                 │                              │
+├─────────────────┼──────────────────────────────┤
+│   Gait Window   │   Data Window                │
+│   (700x350)     │   (350x350)                  │
+│                 │                              │
+│   • Gait        │   • Joint Angles             │
+│     Patterns    │   • Sensor Data              │
+│   • Leg States  │   • System Info              │
+└─────────────────┴──────────────────────────────┘
+```
+
+**Window Management:**
+- **Auto-positioning**: Windows automatically placed for optimal viewing
+- **Independent**: Each window can be moved, minimized, or closed independently
+- **Synchronized**: All windows update in real-time with shared robot state
+- **Screen-aware**: Optimized layout fits perfectly on 720x720 displays
+
+---
+
+## 🎛️ Control Interface
 
 The modern interface features a **black background with vibrant neon colors** and intuitive control layout:
 
