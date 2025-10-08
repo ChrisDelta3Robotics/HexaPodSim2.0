@@ -558,6 +558,11 @@ class JointControllerSystem:
         for controller in self.controllers.values():
             controller.state.output = 0.0
             
+    def reset(self):
+        """Reset all controllers to initial state"""
+        for controller in self.controllers.values():
+            controller.reset()
+            
     def set_control_frequency(self, frequency: float):
         """Set desired control frequency"""
         self.control_frequency = max(1.0, frequency)

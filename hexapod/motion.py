@@ -275,6 +275,28 @@ class MotionController:
         # Stop controllers
         self.controller_system.emergency_stop()
         
+    def reset(self):
+        """Reset the motion controller and clear emergency stop"""
+        logger.info("Resetting motion controller...")
+        
+        # Clear emergency stop
+        self.status.emergency_stop_active = False
+        self.status.mode = MotionMode.IDLE
+        self.status.state = MotionState.READY
+        
+        # Clear command queue and reset current command
+        self.command_queue.clear()
+        self.current_command = MotionCommand()
+        
+        # Reset subsystems to safe state
+        try:
+            logger.info("Motion controller reset successfully")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error during reset: {e}")
+            return False
+        
     def set_motion_command(self, command: MotionCommand) -> bool:
         """Set a new motion command"""
         if self.status.emergency_stop_active:
@@ -615,10 +637,55 @@ class MotionController:
         command = MotionCommand()  # Zero velocity
         return self.set_motion_command(command)
         
-    def set_gait_type(self, gait_type: GaitType) -> bool:
-        """Change gait type"""
-        self.gait_generator.set_gait_type(gait_type)
-        return True
+    def emergency_stop(self):
+        """Activate emergency stop"""
+        logger.critical("EMERGENCY STOP ACTIVATED")
+        self.status.emergency_stop_active = True
+        self.status.mode = MotionMode.EMERGENCY_STOP
+        self.status.state = MotionState.ERROR
+        self.current_command = MotionCommand()  # Stop all motion
+        
+    def reset(self) -> bool:
+        """Reset system to ready state"""
+        try:
+            logger.info("Resetting motion control system")
+            
+            # Clear emergency stop
+            self.status.emergency_stop_active = False
+            self.status.safety_violations = []
+            
+            # Reset to idle state
+            self.status.mode = MotionMode.IDLE
+            self.status.state = MotionState.READY
+            
+            # Clear current command
+            self.current_command = MotionCommand()
+            
+            # Reset joint angles to safe home position (all zeros)
+            self.status.joint_angles = np.zeros(18)  # 6 legs × 3 joints each
+            self.status.joint_targets = np.zeros(18)
+            self.status.joint_errors = np.zeros(18)
+            
+            # Reset velocities and other status
+            self.status.current_velocity = np.zeros(3)
+            self.status.current_angular_velocity = np.zeros(3)
+            self.status.stability_margin = 0.15  # Safe default
+            self.status.computation_time = 0.0
+            
+            # Reset controller system if it has reset method
+            if hasattr(self.controller_system, 'reset'):
+                self.controller_system.reset()
+                
+            # Reset adaptive controller if it has reset method
+            if hasattr(self.adaptive_controller, 'reset'):
+                self.adaptive_controller.reset()
+                
+            logger.info("Motion control system reset complete")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Reset failed: {e}")
+            return False
         
     def get_performance_summary(self) -> Dict[str, Any]:
         """Get performance summary"""

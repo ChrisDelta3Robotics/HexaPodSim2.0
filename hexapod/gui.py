@@ -98,10 +98,10 @@ class Colors:
     ACCENT_6 = '#FF0080'        # Neon Pink (R3)
     TEXT_PRIMARY = '#FFFFFF'    # White text
     TEXT_SECONDARY = '#CCCCCC'  # Light gray text
-    BUTTON_NORMAL = '#333333'   # Button background
-    BUTTON_ACTIVE = '#555555'   # Active button
-    BUTTON_HOVER = '#444444'    # Hover button
-    BORDER = '#666666'          # Border color
+    BUTTON_NORMAL = '#666666'   # More visible button background
+    BUTTON_ACTIVE = '#888888'   # Brighter active button
+    BUTTON_HOVER = '#777777'    # Hover button
+    BORDER = '#888888'          # Lighter border color
 
 class LEG_CONFIG:
     """Leg configuration with star formation"""
@@ -882,6 +882,48 @@ class ControlPanel:
                                  command=lambda: self._handle_movement('turn_right'))
         self.e_button.pack(side=tk.LEFT, padx=2)
         
+        # Add button click debugging
+        def debug_button_click(direction):
+            print(f"🖱️ Button clicked: {direction}")
+            print(f"📊 Button states check:")
+            print(f"   - W button state: {self.w_button['state'] if hasattr(self, 'w_button') else 'N/A'}")
+            print(f"   - A button state: {self.a_button['state'] if hasattr(self, 'a_button') else 'N/A'}")
+            print(f"   - S button state: {self.s_button['state'] if hasattr(self, 's_button') else 'N/A'}")
+            print(f"   - D button state: {self.d_button['state'] if hasattr(self, 'd_button') else 'N/A'}")
+            print(f"   - Q button state: {self.q_button['state'] if hasattr(self, 'q_button') else 'N/A'}")
+            print(f"   - E button state: {self.e_button['state'] if hasattr(self, 'e_button') else 'N/A'}")
+            
+            # Provide visual feedback by briefly changing button color
+            button_map = {
+                'forward': 'w_button', 'backward': 's_button', 
+                'left': 'a_button', 'right': 'd_button',
+                'turn_left': 'q_button', 'turn_right': 'e_button'
+            }
+            
+            if direction in button_map:
+                button_attr = button_map[direction]
+                if hasattr(self, button_attr):
+                    button = getattr(self, button_attr)
+                    # Store the original color as a property of the button
+                    if not hasattr(button, '_original_bg'):
+                        button._original_bg = button['bg']
+                    
+                    # Flash bright green to show button press
+                    button.config(bg='#00FF00')
+                    # Reset color after 200ms using the stored original color
+                    def reset_button_color(btn=button):
+                        btn.config(bg=btn._original_bg)
+                    # Get root window from parent widget
+                    root_window = self.frame.winfo_toplevel()
+                    root_window.after(200, reset_button_color)
+            
+            self._handle_movement(direction)
+        
+        # Update button commands for debugging
+        self.q_button.config(command=lambda: debug_button_click('turn_left'))
+        self.w_button.config(command=lambda: debug_button_click('forward'))
+        self.e_button.config(command=lambda: debug_button_click('turn_right'))
+        
         # Middle row: A - S - D
         middle_row = tk.Frame(movement_frame, bg=Colors.PANEL_BG)
         middle_row.pack(pady=2)
@@ -897,6 +939,11 @@ class ControlPanel:
         self.d_button = tk.Button(middle_row, text="D", **button_style,
                                  command=lambda: self._handle_movement('right'))
         self.d_button.pack(side=tk.LEFT, padx=2)
+        
+        # Update middle row buttons for debugging
+        self.a_button.config(command=lambda: debug_button_click('left'))
+        self.s_button.config(command=lambda: debug_button_click('backward'))
+        self.d_button.config(command=lambda: debug_button_click('right'))
         
         # Labels
         label_frame = tk.Frame(movement_frame, bg=Colors.PANEL_BG)
@@ -968,6 +1015,15 @@ class ControlPanel:
                                     command=lambda: self._handle_action('stop'))
         self.stop_button.pack(side=tk.RIGHT, padx=2)
         
+        # Add action button debugging
+        def debug_action_click(action):
+            print(f"🖱️ Action button clicked: {action}")
+            self._handle_action(action)
+        
+        # Update action button commands for debugging
+        self.start_button.config(command=lambda: debug_action_click('start'))
+        self.stop_button.config(command=lambda: debug_action_click('stop'))
+        
         # Quick actions
         quick_frame = tk.Frame(action_frame, bg=Colors.PANEL_BG)
         quick_frame.pack(fill=tk.X, pady=2)
@@ -1010,6 +1066,15 @@ class ControlPanel:
         self.settings_button = tk.Button(sys_buttons_frame, text="SETTINGS", **button_style,
                                         command=lambda: self._handle_system('settings'))
         self.settings_button.pack(side=tk.RIGHT, padx=1)
+        
+        # Add system button debugging
+        def debug_system_click(command):
+            print(f"🖱️ System button clicked: {command}")
+            self._handle_system(command)
+        
+        # Update system button commands for debugging
+        self.reset_button.config(command=lambda: debug_system_click('reset'))
+        self.settings_button.config(command=lambda: debug_system_click('settings'))
     
     def _create_status_display(self):
         """Create status display area"""
@@ -1034,21 +1099,64 @@ class ControlPanel:
     
     def _handle_movement(self, direction: str):
         """Handle movement button press"""
+        print(f"🎛️ ControlPanel._handle_movement called with direction: {direction}")
         if direction in self.movement_callbacks:
+            print(f"✅ Found callback for {direction}, executing...")
             self.movement_callbacks[direction]()
-        self.update_status(f"Movement: {direction}\n")
+            # Show visual feedback
+            self.update_status(f"🎮 MOVING {direction.upper()}\n")
+        else:
+            print(f"❌ No callback found for direction: {direction}")
+            print(f"Available callbacks: {list(self.movement_callbacks.keys())}")
+            self.update_status(f"❌ No callback for movement: {direction}\n")
     
     def _handle_action(self, action: str):
         """Handle action button press"""
+        print(f"🎬 Action button pressed: {action}")
+        
+        # Provide visual feedback
+        button_map = {'start': 'start_button', 'stop': 'stop_button'}
+        if action in button_map and hasattr(self, button_map[action]):
+            button = getattr(self, button_map[action])
+            if not hasattr(button, '_original_bg'):
+                button._original_bg = button['bg']
+            button.config(bg='#00FF00')  # Flash green
+            def reset_action_button_color(btn=button):
+                btn.config(bg=btn._original_bg)
+            # Get root window from parent widget
+            root_window = self.frame.winfo_toplevel()
+            root_window.after(200, reset_action_button_color)
+        
         if action in self.action_callbacks:
             self.action_callbacks[action]()
-        self.update_status(f"Action: {action}\n")
-    
+            # Show visual feedback
+            self.update_status(f"✅ {action.upper()} executed successfully\n")
+        else:
+            self.update_status(f"❌ No callback for action: {action}\n")
+        
     def _handle_system(self, command: str):
         """Handle system command"""
+        print(f"⚙️ System button pressed: {command}")
+        
+        # Provide visual feedback
+        button_map = {'reset': 'reset_button', 'settings': 'settings_button'}
+        if command in button_map and hasattr(self, button_map[command]):
+            button = getattr(self, button_map[command])
+            if not hasattr(button, '_original_bg'):
+                button._original_bg = button['bg']
+            button.config(bg='#FF6600')  # Flash orange for system commands
+            def reset_system_button_color(btn=button):
+                btn.config(bg=btn._original_bg)
+            # Get root window from parent widget
+            root_window = self.frame.winfo_toplevel()
+            root_window.after(200, reset_system_button_color)
+        
         if command in self.system_callbacks:
             self.system_callbacks[command]()
-        self.update_status(f"System: {command}\n")
+            # Show visual feedback  
+            self.update_status(f"✅ {command.upper()} executed successfully\n")
+        else:
+            self.update_status(f"❌ No callback for system: {command}\n")
     
     def _handle_gait_change(self, event):
         """Handle gait selection change"""
@@ -1061,6 +1169,20 @@ class ControlPanel:
         """Update status display"""
         self.status_text.insert(tk.END, f"[{time.strftime('%H:%M:%S')}] {message}")
         self.status_text.see(tk.END)
+        
+    def reset_all_button_colors(self):
+        """Reset all buttons to their original colors"""
+        button_names = ['w_button', 'a_button', 's_button', 'd_button', 'q_button', 'e_button',
+                       'start_button', 'stop_button', 'reset_button', 'settings_button']
+        
+        for button_name in button_names:
+            if hasattr(self, button_name):
+                button = getattr(self, button_name)
+                if hasattr(button, '_original_bg'):
+                    button.config(bg=button._original_bg)
+                else:
+                    # Fallback to default button color
+                    button.config(bg=Colors.BUTTON_NORMAL)
         
         # Limit text length
         if int(self.status_text.index('end-1c').split('.')[0]) > 100:
