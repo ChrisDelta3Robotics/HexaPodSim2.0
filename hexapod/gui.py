@@ -831,8 +831,8 @@ class ControlPanel:
         # Title
         title_label = tk.Label(self.frame, text="ROBOT CONTROL", 
                               bg=Colors.PANEL_BG, fg=Colors.TEXT_PRIMARY,
-                              font=("Arial", 12, "bold"))
-        title_label.pack(pady=5)
+                              font=("Arial", 10, "bold"))
+        title_label.pack(pady=2)
         
         # Movement controls
         self._create_movement_controls()
@@ -850,8 +850,8 @@ class ControlPanel:
         """Create movement control buttons (WASD + QE)"""
         movement_frame = tk.LabelFrame(self.frame, text="Movement Controls", 
                                      bg=Colors.PANEL_BG, fg=Colors.TEXT_PRIMARY,
-                                     font=("Arial", 10, "bold"))
-        movement_frame.pack(fill=tk.X, padx=10, pady=5)
+                                     font=("Arial", 9, "bold"))
+        movement_frame.pack(fill=tk.X, padx=5, pady=2)
         
         # Create button style
         button_style = {
@@ -957,8 +957,8 @@ class ControlPanel:
         """Create action control buttons"""
         action_frame = tk.LabelFrame(self.frame, text="Actions", 
                                    bg=Colors.PANEL_BG, fg=Colors.TEXT_PRIMARY,
-                                   font=("Arial", 10, "bold"))
-        action_frame.pack(fill=tk.X, padx=10, pady=5)
+                                   font=("Arial", 9, "bold"))
+        action_frame.pack(fill=tk.X, padx=5, pady=2)
         
         button_style = {
             'bg': Colors.BUTTON_NORMAL,
@@ -1001,7 +1001,7 @@ class ControlPanel:
         
         # Action buttons
         buttons_frame = tk.Frame(action_frame, bg=Colors.PANEL_BG)
-        buttons_frame.pack(fill=tk.X, pady=5)
+        buttons_frame.pack(fill=tk.X, pady=2)
         
         start_style = button_style.copy()
         start_style['bg'] = Colors.ACCENT_1
@@ -1040,8 +1040,8 @@ class ControlPanel:
         """Create system control buttons"""
         system_frame = tk.LabelFrame(self.frame, text="System", 
                                    bg=Colors.PANEL_BG, fg=Colors.TEXT_PRIMARY,
-                                   font=("Arial", 10, "bold"))
-        system_frame.pack(fill=tk.X, padx=10, pady=5)
+                                   font=("Arial", 9, "bold"))
+        system_frame.pack(fill=tk.X, padx=5, pady=2)
         
         button_style = {
             'bg': Colors.BUTTON_NORMAL,
@@ -1080,14 +1080,14 @@ class ControlPanel:
         """Create status display area"""
         status_frame = tk.LabelFrame(self.frame, text="Status", 
                                    bg=Colors.PANEL_BG, fg=Colors.TEXT_PRIMARY,
-                                   font=("Arial", 10, "bold"))
-        status_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+                                   font=("Arial", 9, "bold"))
+        status_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=2)
         
         # Status text
         self.status_text = tk.Text(status_frame, bg=Colors.BACKGROUND, fg=Colors.TEXT_PRIMARY,
-                                  font=("Courier", 8), height=8, width=30,
+                                  font=("Courier", 8), height=6, width=30,
                                   relief=tk.SUNKEN, bd=1)
-        self.status_text.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        self.status_text.pack(fill=tk.BOTH, expand=True, padx=3, pady=3)
         
         # Scrollbar
         scrollbar = tk.Scrollbar(status_frame, command=self.status_text.yview)

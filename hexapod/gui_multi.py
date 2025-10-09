@@ -48,7 +48,7 @@ class ControlWindow:
         self.controller = multi_gui_controller
         self.root = tk.Tk()
         self.root.title("🤖 HexaPodSim 2.0 - Control Center")
-        self.root.geometry("350x650+10+10")
+        self.root.geometry("350x450+10+10")
         self.root.configure(bg=Colors.BACKGROUND)
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
         
@@ -61,11 +61,11 @@ class ControlWindow:
         title_label = tk.Label(
             self.root,
             text="🤖 CONTROL CENTER",
-            font=('Consolas', 16, 'bold'),
+            font=('Consolas', 14, 'bold'),
             fg=Colors.ACCENT_1,
             bg=Colors.BACKGROUND
         )
-        title_label.pack(pady=10)
+        title_label.pack(pady=5)
         
         # Status frame
         status_frame = tk.LabelFrame(
@@ -73,24 +73,24 @@ class ControlWindow:
             text="System Status",
             bg=Colors.PANEL_BG,
             fg=Colors.TEXT_PRIMARY,
-            font=('Arial', 10, 'bold')
+            font=('Arial', 9, 'bold')
         )
-        status_frame.pack(fill=tk.X, padx=10, pady=(0, 10))
+        status_frame.pack(fill=tk.X, padx=10, pady=(0, 5))
         
         self.status_text = tk.Text(
             status_frame,
-            height=8,
+            height=4,
             bg=Colors.BACKGROUND,
             fg=Colors.TEXT_PRIMARY,
-            font=('Consolas', 9),
+            font=('Consolas', 8),
             wrap=tk.WORD
         )
-        self.status_text.pack(fill=tk.X, padx=5, pady=5)
+        self.status_text.pack(fill=tk.X, padx=5, pady=3)
         
         # Control panel
         try:
-            self.control_panel = ControlPanel(self.root, width=330, height=300)
-            self.control_panel.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 10))
+            self.control_panel = ControlPanel(self.root, width=330, height=220)
+            self.control_panel.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 5))
             
             # Set up callbacks
             print("🔧 Setting up movement callbacks...")
