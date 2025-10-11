@@ -48,7 +48,7 @@ class ControlWindow:
         self.controller = multi_gui_controller
         self.root = tk.Tk()
         self.root.title("🤖 HexaPodSim 2.0 - Control Center")
-        self.root.geometry("350x450+10+10")
+        self.root.geometry("350x680+10+10")
         self.root.configure(bg=Colors.BACKGROUND)
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
         
@@ -79,7 +79,7 @@ class ControlWindow:
         
         self.status_text = tk.Text(
             status_frame,
-            height=4,
+            height=8,
             bg=Colors.BACKGROUND,
             fg=Colors.TEXT_PRIMARY,
             font=('Consolas', 8),
@@ -89,7 +89,7 @@ class ControlWindow:
         
         # Control panel
         try:
-            self.control_panel = ControlPanel(self.root, width=330, height=220)
+            self.control_panel = ControlPanel(self.root, width=330, height=500)
             self.control_panel.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 5))
             
             # Set up callbacks
